@@ -1,0 +1,3137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Dork Operator Anatomy — Complete Visual Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #080b10;
+  --bg2:       #0c1018;
+  --bg3:       #111620;
+  --bg4:       #161d2a;
+  --line:      #1c2535;
+  --line2:     #243040;
+  --text:      #b8c8dc;
+  --text2:     #7a90a8;
+  --text3:     #4a5f78;
+  --white:     #eef3f9;
+
+  --title-c:   #38bdf8;  /* sky blue  — intitle  */
+  --url-c:     #4ade80;  /* green     — inurl    */
+  --text-c:    #fbbf24;  /* amber     — intext   */
+  --anchor-c:  #a78bfa;  /* violet    — inanchor */
+  --site-c:    #f87171;  /* red       — site:    */
+  --file-c:    #fb923c;  /* orange    — filetype:*/
+  --meta-c:    #22d3ee;  /* cyan      — cache/related/info */
+  --bool-c:    #e879f9;  /* fuchsia   — boolean/syntax    */
+
+  --title-bg:  rgba(56,189,248,0.08);
+  --url-bg:    rgba(74,222,128,0.08);
+  --text-bg:   rgba(251,191,36,0.08);
+  --anchor-bg: rgba(167,139,250,0.08);
+  --meta-bg:   rgba(34,211,238,0.08);
+  --bool-bg:   rgba(232,121,249,0.08);
+
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'DM Sans', sans-serif;
+  --serif: 'DM Serif Display', serif;
+
+  --radius: 8px;
+  --nav-h: 52px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 14.5px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; }
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--bg4);
+  border: 1px solid var(--line2);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--white);
+}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
+
+/* ═══════════════════════════════════════════
+   STICKY NAV
+═══════════════════════════════════════════ */
+#nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--nav-h);
+  background: rgba(8,11,16,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#nav::-webkit-scrollbar { display: none; }
+#nav a {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
+  padding: 6px 14px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+#nav a:hover { color: var(--text); background: var(--bg3); }
+#nav a.active {
+  color: var(--title-c);
+  border-color: rgba(56,189,248,0.3);
+  background: rgba(56,189,248,0.06);
+}
+.nav-sep {
+  width: 1px; height: 16px;
+  background: var(--line);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.page { max-width: 1060px; margin: 0 auto; padding: 0 32px 100px; }
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero {
+  padding: 72px 0 60px;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; left: -100px;
+  width: 640px; height: 400px;
+  background: radial-gradient(ellipse at 30% 40%, rgba(56,189,248,0.05) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--title-c);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block;
+  width: 24px; height: 1px;
+  background: var(--title-c);
+}
+h1.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  color: var(--white);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin-bottom: 18px;
+}
+h1.hero-title span { color: var(--title-c); }
+.hero-desc {
+  color: var(--text2);
+  font-size: 15px;
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid;
+  letter-spacing: 0.5px;
+}
+.pill-title  { color: var(--title-c);  border-color: rgba(56,189,248,0.3);  background: rgba(56,189,248,0.07);  }
+.pill-url    { color: var(--url-c);    border-color: rgba(74,222,128,0.3);  background: rgba(74,222,128,0.07);  }
+.pill-text   { color: var(--text-c);   border-color: rgba(251,191,36,0.3);  background: rgba(251,191,36,0.07);  }
+.pill-anchor { color: var(--anchor-c); border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.07); }
+.pill-site   { color: var(--site-c);   border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.07); }
+.pill-file   { color: var(--file-c);   border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.07);  }
+
+/* ═══════════════════════════════════════════
+   SECTION STRUCTURE
+═══════════════════════════════════════════ */
+.section {
+  padding: 64px 0 48px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: calc(var(--nav-h) + 16px);
+}
+.section-head { margin-bottom: 36px; }
+.sec-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.sec-num span { color: var(--title-c); }
+h2.sec-title {
+  font-family: var(--serif);
+  font-size: 2rem;
+  color: var(--white);
+  font-weight: 400;
+  letter-spacing: -0.3px;
+  margin-bottom: 10px;
+}
+.sec-sub {
+  color: var(--text2);
+  font-size: 14px;
+  max-width: 640px;
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════
+   CALLOUT / INFO BOXES
+═══════════════════════════════════════════ */
+.callout {
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  margin: 20px 0;
+}
+.callout-key {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.callout-warn {
+  background: rgba(251,191,36,0.06);
+  border: 1px solid rgba(251,191,36,0.2);
+  border-left: 3px solid var(--text-c);
+}
+.callout-warn .callout-key { color: var(--text-c); }
+.callout-info {
+  background: rgba(56,189,248,0.05);
+  border: 1px solid rgba(56,189,248,0.15);
+  border-left: 3px solid var(--title-c);
+}
+.callout-info .callout-key { color: var(--title-c); }
+.callout-tip {
+  background: rgba(74,222,128,0.05);
+  border: 1px solid rgba(74,222,128,0.15);
+  border-left: 3px solid var(--url-c);
+}
+.callout-tip .callout-key { color: var(--url-c); }
+
+/* ═══════════════════════════════════════════
+   MENTAL MODEL — LAYER DIAGRAM
+═══════════════════════════════════════════ */
+.layer-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.layer-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 220px;
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.2s;
+}
+.layer-row:last-child { border-bottom: none; }
+.layer-row:hover { background: rgba(255,255,255,0.015); }
+.layer-num {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 18px 20px;
+  border-right: 1px solid var(--line);
+  background: var(--bg2);
+}
+.layer-badge {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+.layer-sublabel {
+  font-size: 10px;
+  color: var(--text3);
+  font-family: var(--mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.layer-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.layer-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+.layer-desc {
+  font-size: 12.5px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+.layer-example {
+  padding: 16px 20px;
+  border-left: 1px solid var(--line);
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.layer-ex-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.layer-ex-val {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* ═══════════════════════════════════════════
+   GOOGLE RESULT MOCKUP (Section 2)
+═══════════════════════════════════════════ */
+.result-anatomy-wrap {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+  margin-top: 28px;
+}
+@media(max-width: 720px) { .result-anatomy-wrap { grid-template-columns: 1fr; } }
+
+.google-mock {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: 0 0 0 1px #e0e0e0, var(--shadow);
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+.gm-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+.gm-favicon {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: linear-gradient(135deg,#1a73e8,#0d47a1);
+  flex-shrink: 0; margin-top: 2px;
+}
+.gm-domain { font-size: 13px; color: #202124; font-weight: 600; }
+.gm-breadcrumb { font-size: 12px; color: #5f6368; }
+.gm-url-line {
+  font-size: 12px;
+  margin: 0 0 8px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+}
+.gm-title {
+  font-size: 19px;
+  color: #1a0dab;
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 8px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+}
+.gm-snippet {
+  font-size: 13px;
+  color: #4d5156;
+  line-height: 1.55;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+}
+.gm-snippet strong { color: #202124; }
+.gm-link { color: #1a0dab; text-decoration: underline; }
+
+/* annotation tags on mockup */
+.atag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+.atag-title  { background: rgba(56,189,248,0.15);  color: #1e6fa8; border: 1px solid rgba(56,189,248,0.5);  }
+.atag-url    { background: rgba(74,222,128,0.15);  color: #1a6b35; border: 1px solid rgba(74,222,128,0.5);  }
+.atag-text   { background: rgba(251,191,36,0.15);  color: #8a6000; border: 1px solid rgba(251,191,36,0.5);  }
+.atag-anchor { background: rgba(167,139,250,0.15); color: #6040c0; border: 1px solid rgba(167,139,250,0.5); }
+
+/* legend sidebar */
+.legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.legend-card {
+  background: var(--bg3);
+  border: 1px solid var(--line2);
+  border-radius: 7px;
+  padding: 13px 15px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: border-color 0.2s;
+  cursor: default;
+}
+.legend-card:hover { border-color: var(--line2); }
+.lc-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+.lc-text {}
+.lc-op {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+.lc-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.45;
+}
+
+/* ═══════════════════════════════════════════
+   BROWSER MOCKUP (Section 3 — Page Anatomy)
+═══════════════════════════════════════════ */
+.browser-mock {
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  font-family: Arial, sans-serif;
+  margin-top: 28px;
+}
+.browser-chrome {
+  background: #f1f3f4;
+  border-bottom: 1px solid #dadce0;
+}
+.browser-tab-bar {
+  padding: 8px 12px 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+}
+.browser-tab {
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 7px 16px;
+  font-size: 12px;
+  color: #202124;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 280px;
+  position: relative;
+}
+.browser-tab-favicon {
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(135deg,#1a73e8,#0d47a1);
+  flex-shrink: 0;
+}
+.browser-tab-title {
+  font-size: 12px;
+  color: #202124;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.browser-tab-annotation {
+  margin-left: auto;
+  padding-left: 8px;
+}
+.browser-addr {
+  padding: 8px 12px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.browser-dots-wrap { display: flex; gap: 5px; }
+.bdot { width: 10px; height: 10px; border-radius: 50%; }
+.browser-addr-bar {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.url-https { color: #188038; font-size: 12px; }
+.url-domain { color: #202124; font-weight: 700; }
+.url-path { color: #1558d6; }
+.url-param { color: #e37400; }
+.url-ann { margin-left: auto; }
+
+.browser-body {
+  background: #fff;
+  padding: 28px 32px;
+}
+.page-h1 { font-size: 24px; font-weight: 700; color: #202124; margin-bottom: 12px; }
+.page-h1-note {
+  display: inline-block;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--mono);
+  color: #856404;
+  padding: 2px 8px;
+  vertical-align: middle;
+  margin-left: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.page-body-text {
+  font-size: 14px;
+  color: #4d5156;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e8eaed;
+}
+.page-body-text strong { color: #202124; }
+.page-link-row {
+  font-size: 14px;
+  color: #4d5156;
+}
+.page-link-row a {
+  color: #1a0dab;
+  text-decoration: underline;
+}
+
+/* annotation rows below browser */
+.ann-table {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ann-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 16px;
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 14px;
+  align-items: center;
+}
+.ann-op {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.ann-explanation { font-size: 12.5px; color: var(--text2); line-height: 1.4; }
+.ann-explanation strong { color: var(--white); }
+
+/* ═══════════════════════════════════════════
+   OPERATOR CARDS (Section 4)
+═══════════════════════════════════════════ */
+.op-cards { display: flex; flex-direction: column; gap: 32px; margin-top: 28px; }
+
+.op-card {
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.op-card-header {
+  padding: 18px 24px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.op-icon-wrap {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: 1px solid;
+}
+.op-meta {}
+.op-name {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+.op-target-line {
+  font-size: 11.5px;
+  color: var(--text3);
+  font-family: var(--mono);
+  letter-spacing: 0.5px;
+}
+.op-where-badge {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.op-card-body { padding: 22px 24px; }
+.op-desc-para {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.op-desc-para strong { color: var(--white); }
+
+/* single vs all comparison */
+.single-vs-all {
+  margin-bottom: 24px;
+}
+.sva-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+.sva-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media(max-width:580px){ .sva-grid { grid-template-columns: 1fr; } }
+.sva-col {
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.sva-col-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sva-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.sva-col-title { font-size: 12px; color: var(--text2); }
+.sva-col-body { padding: 12px 14px; }
+.sva-dork {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  word-break: break-all;
+  margin-bottom: 8px;
+  cursor: pointer;
+  padding: 8px 10px;
+  background: var(--bg4);
+  border: 1px solid var(--line2);
+  border-radius: 5px;
+  transition: background 0.15s;
+}
+.sva-dork:hover { background: #1c2535; }
+.sva-explanation {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.sva-difference {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--bg4);
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text2);
+  font-family: var(--mono);
+  line-height: 1.6;
+}
+.sva-difference strong { color: var(--white); font-weight: 600; }
+
+/* examples grid */
+.examples-section { margin-top: 22px; }
+.examples-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+.example-list { display: flex; flex-direction: column; gap: 10px; }
+.example-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0;
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.example-item:hover { border-color: var(--line2); }
+.example-dork-col {
+  padding: 11px 14px;
+  border-right: 1px solid var(--line);
+}
+.example-dork-text {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  word-break: break-all;
+  margin-bottom: 4px;
+}
+.example-purpose {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.4;
+}
+.copy-btn {
+  padding: 0 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--text3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  gap: 5px;
+}
+.copy-btn:hover { color: var(--white); background: var(--bg4); }
+
+/* ═══════════════════════════════════════════
+   CATEGORY HEADERS (Section 4)
+═══════════════════════════════════════════ */
+.cat-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 48px 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line2);
+}
+.cat-header:first-child { margin-top: 28px; }
+.cat-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+.cat-title {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--white);
+  font-weight: 400;
+  letter-spacing: -0.2px;
+}
+.cat-pill {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.cat-desc {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-width: 720px;
+}
+
+/* operator alias badge */
+.op-alias {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(251,146,60,0.35);
+  background: rgba(251,146,60,0.07);
+  color: var(--file-c);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* simple op card variant for boolean/meta ops (no sva-grid needed) */
+.op-card-simple .op-card-body { padding: 22px 24px; }
+.syntax-examples { margin-top: 20px; }
+.syntax-row {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 0;
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+.syntax-row:hover { border-color: var(--line2); }
+.syntax-dork {
+  padding: 10px 14px;
+  border-right: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  word-break: break-all;
+}
+.syntax-meaning {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--text2);
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+}
+
+
+.combo-list { display: flex; flex-direction: column; gap: 20px; margin-top: 28px; }
+.combo-card {
+  background: var(--bg3);
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.combo-header {
+  padding: 12px 18px;
+  background: var(--bg4);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.combo-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.combo-goal {
+  font-size: 13px;
+  color: var(--white);
+  font-weight: 600;
+}
+.combo-body { padding: 16px 18px; }
+.combo-dork {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.8;
+  word-break: break-all;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.combo-dork:hover { background: #0f141e; }
+.combo-breakdown { display: flex; flex-direction: column; gap: 6px; }
+.cb-row {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.cb-op { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.cb-meaning { color: var(--text2); }
+
+/* ═══════════════════════════════════════════
+   QUICK REFERENCE TABLE (Section 6)
+═══════════════════════════════════════════ */
+.ref-wrap {
+  overflow-x: auto;
+  margin-top: 28px;
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+}
+table.ref {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.ref th {
+  background: var(--bg4);
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--line2);
+  white-space: nowrap;
+}
+table.ref td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+table.ref tr:last-child td { border-bottom: none; }
+table.ref tr:hover td { background: rgba(255,255,255,0.015); }
+.ref-op {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.ref-example {
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 8px;
+  background: var(--bg4);
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+  transition: background 0.15s;
+  display: inline-block;
+}
+.ref-example:hover { background: #1c2535; }
+.ref-scope {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.4;
+}
+.ref-note {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+
+/* ═══════════════════════════════════════════
+   COMMON MISTAKES (Section 7)
+═══════════════════════════════════════════ */
+.mistake-list { display: flex; flex-direction: column; gap: 16px; margin-top: 28px; }
+.mistake-card {
+  background: var(--bg3);
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.mistake-header {
+  padding: 12px 18px;
+  background: rgba(248,113,113,0.05);
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.mistake-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.mistake-title { font-size: 13.5px; font-weight: 600; color: var(--white); }
+.mistake-body { padding: 14px 18px; }
+.wrong-right {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media(max-width:560px){ .wrong-right { grid-template-columns: 1fr; } }
+.wr-col {
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  word-break: break-all;
+}
+.wr-wrong {
+  background: rgba(248,113,113,0.07);
+  border: 1px solid rgba(248,113,113,0.2);
+}
+.wr-wrong::before { content: '✗  '; color: #f87171; font-weight: 700; }
+.wr-right {
+  background: rgba(74,222,128,0.07);
+  border: 1px solid rgba(74,222,128,0.2);
+}
+.wr-right::before { content: '✓  '; color: #4ade80; font-weight: 700; }
+.mistake-explain { font-size: 12.5px; color: var(--text2); line-height: 1.55; }
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+#toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: var(--url-c);
+  color: #000;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 9999;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+.page-footer {
+  padding: 32px 0 0;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 2;
+}
+
+/* ═══════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:580px){ .grid-2 { grid-template-columns: 1fr; } }
+
+.mt-4  { margin-top: 16px; }
+.mt-6  { margin-top: 24px; }
+.mt-8  { margin-top: 32px; }
+</style>
+</head>
+<body>
+
+<div id="toast">COPIED</div>
+
+<!-- ══════════════════════════════════════════
+     STICKY NAV
+══════════════════════════════════════════ -->
+<nav id="nav">
+  <a href="#s1" data-t="s1">01 — Mental Model</a>
+  <div class="nav-sep"></div>
+  <a href="#s2" data-t="s2">02 — Search Result</a>
+  <div class="nav-sep"></div>
+  <a href="#s3" data-t="s3">03 — Page Anatomy</a>
+  <div class="nav-sep"></div>
+  <a href="#s4" data-t="s4">04 — Operator Guide</a>
+  <div class="nav-sep"></div>
+  <a href="#s4b" data-t="s4b">↳ Meta Operators</a>
+  <div class="nav-sep"></div>
+  <a href="#s4c" data-t="s4c">↳ Boolean &amp; Syntax</a>
+  <div class="nav-sep"></div>
+  <a href="#s5" data-t="s5">05 — Combining</a>
+  <div class="nav-sep"></div>
+  <a href="#s6" data-t="s6">06 — Quick Reference</a>
+  <div class="nav-sep"></div>
+  <a href="#s7" data-t="s7">07 — Common Mistakes</a>
+</nav>
+
+<div class="page">
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-eyebrow">Visual Reference Guide</div>
+  <h1 class="hero-title">Google Dork<br><span>Operator Anatomy</span></h1>
+  <p class="hero-desc">
+    A structured, visual breakdown of every major dork operator — exactly what part of a page each one scans, how single vs. all variants differ, and how to combine them effectively.
+  </p>
+  <div class="hero-pills">
+    <span class="pill pill-title">intitle: / allintitle:</span>
+    <span class="pill pill-url">inurl: / allinurl:</span>
+    <span class="pill pill-text">intext: / allintext:</span>
+    <span class="pill pill-anchor">inanchor: / allinanchor:</span>
+    <span class="pill pill-site">site:</span>
+    <span class="pill pill-file">filetype: / ext:</span>
+    <span class="pill" style="color:var(--meta-c);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.07);">cache: &nbsp;·&nbsp; related: &nbsp;·&nbsp; info:</span>
+    <span class="pill" style="color:var(--bool-c);border-color:rgba(232,121,249,0.3);background:rgba(232,121,249,0.07);">"phrase" &nbsp;·&nbsp; -minus &nbsp;·&nbsp; OR &nbsp;·&nbsp; * &nbsp;·&nbsp; ..</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     S1 — MENTAL MODEL
+══════════════════════════════════════════ -->
+<section class="section" id="s1">
+  <div class="section-head">
+    <div class="sec-num"><span>01</span> — Mental Model</div>
+    <h2 class="sec-title">Every Page Has Layers. Every Operator Scans One.</h2>
+    <p class="sec-sub">
+      This is the core concept. A webpage isn't a single blob of text — it has distinct structural layers. Each dork operator is designed to search exactly one specific layer. Once you understand this, nothing will feel confusing again.
+    </p>
+  </div>
+
+  <div class="layer-diagram">
+    <!-- header row -->
+    <div style="background:var(--bg4);padding:10px 20px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:160px 1fr 220px;gap:0;">
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;">Operator</div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;padding-left:20px;">What It Scans & Why It Matters</div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;padding-left:20px;border-left:1px solid var(--line);">Where On The Page</div>
+    </div>
+
+    <!-- intitle row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--title-c);">intitle:</div>
+        <div class="layer-sublabel">Layer 1</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">HTML <code>&lt;title&gt;</code> Tag</div>
+        <div class="layer-desc">The text defined inside <code>&lt;title&gt;...&lt;/title&gt;</code> in the HTML head. This shows up in the browser tab and as the blue clickable link in Google results. It is <strong>not</strong> the visible heading (h1/h2) on the page.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--title-c);">Browser tab text</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">intitle:"Admin Login"</div>
+      </div>
+    </div>
+
+    <!-- inurl row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--url-c);">inurl:</div>
+        <div class="layer-sublabel">Layer 2</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">URL / Web Address</div>
+        <div class="layer-desc">The full URL string — domain, path, filename, and query parameters. Matches any segment of the address. Best operator for targeting specific endpoints, admin directories, or vulnerable URL parameters.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--url-c);">Address bar</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">inurl:/admin/login</div>
+      </div>
+    </div>
+
+    <!-- intext row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--text-c);">intext:</div>
+        <div class="layer-sublabel">Layer 3</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Page Body Content</div>
+        <div class="layer-desc">All visible text rendered inside the page — paragraphs, labels, error messages, headings, table content, configuration output. If a human reading the page can see it, <code>intext:</code> can find it.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--text-c);">Page body text</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">intext:"DB_PASSWORD"</div>
+      </div>
+    </div>
+
+    <!-- inanchor row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--anchor-c);">inanchor:</div>
+        <div class="layer-sublabel">Layer 4</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Hyperlink Anchor Text</div>
+        <div class="layer-desc">The visible text of <code>&lt;a&gt;</code> links on the page — not where the link goes, but what the link says. For example: <em>"click here to reset your password"</em>. Useful for navigation mapping and finding linked-to pages.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--anchor-c);">Link text (&lt;a&gt;)</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">inanchor:"reset password"</div>
+      </div>
+    </div>
+
+    <!-- site: row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--site-c);">site:</div>
+        <div class="layer-sublabel">Scope Filter</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Domain / Subdomain Restriction</div>
+        <div class="layer-desc">Not a layer — a scope limiter. Restricts all results to a specific domain or subdomain. Always combine with other operators to target a specific website.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--site-c);">Domain scope</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">site:target.com</div>
+      </div>
+    </div>
+
+    <!-- filetype: row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--file-c);">filetype:</div>
+        <div class="layer-sublabel">Type Filter</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">File Extension Filter</div>
+        <div class="layer-desc">Restricts results to a specific file type based on the extension. Extremely powerful for finding exposed documents, config files, database dumps, and source code files. <code>ext:</code> is an exact alias.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--file-c);">File extension</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">filetype:env</div>
+      </div>
+    </div>
+
+    <!-- ── DIVIDER: Google Meta Operators ── -->
+    <div style="background:rgba(34,211,238,0.04);border-top:1px solid rgba(34,211,238,0.15);border-bottom:1px solid rgba(34,211,238,0.15);padding:8px 20px;display:flex;align-items:center;gap:10px;">
+      <span style="font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--meta-c);">Google Meta Operators</span>
+      <span style="font-size:11.5px;color:var(--text3);">Query Google's own index metadata — not page content</span>
+    </div>
+
+    <!-- cache: row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--meta-c);">cache:</div>
+        <div class="layer-sublabel">Meta</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Google's Cached Snapshot</div>
+        <div class="layer-desc">Loads Google's stored copy of a URL from a previous crawl. Useful when a page is taken down, modified after indexing, or rate-limiting live access. Shows the version Google last saw.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--meta-c);">Google cache index</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">cache:target.com/login</div>
+      </div>
+    </div>
+
+    <!-- related: row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--meta-c);">related:</div>
+        <div class="layer-sublabel">Meta</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Topically Similar Websites</div>
+        <div class="layer-desc">Finds websites that Google considers similar in content or purpose to the given domain. Useful for competitor and infrastructure mapping during passive recon.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--meta-c);">Similarity graph</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">related:target.com</div>
+      </div>
+    </div>
+
+    <!-- info: row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--meta-c);">info:</div>
+        <div class="layer-sublabel">Meta</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Google's Knowledge About a URL</div>
+        <div class="layer-desc">Displays a summary card showing what Google knows about a specific URL — cached version link, similar pages, pages linking to it. Useful for quick recon of a known endpoint.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Location</div>
+        <div class="layer-ex-val" style="color:var(--meta-c);">Google knowledge</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">info:target.com</div>
+      </div>
+    </div>
+
+    <!-- ── DIVIDER: Boolean & Syntax ── -->
+    <div style="background:rgba(232,121,249,0.04);border-top:1px solid rgba(232,121,249,0.15);border-bottom:1px solid rgba(232,121,249,0.15);padding:8px 20px;display:flex;align-items:center;gap:10px;">
+      <span style="font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--bool-c);">Boolean &amp; Syntax Modifiers</span>
+      <span style="font-size:11.5px;color:var(--text3);">Control how terms are matched and combined</span>
+    </div>
+
+    <!-- "phrase" row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--bool-c);">"phrase"</div>
+        <div class="layer-sublabel">Exact Match</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Exact Phrase Matching</div>
+        <div class="layer-desc">Quotation marks force Google to match the exact phrase — no synonyms, no word reordering. Critical for finding specific error strings, config keys, and credential patterns.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Type</div>
+        <div class="layer-ex-val" style="color:var(--bool-c);">Phrase lock</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">"index of /backup"</div>
+      </div>
+    </div>
+
+    <!-- -minus row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--bool-c);">-minus</div>
+        <div class="layer-sublabel">Exclusion</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Term or Operator Exclusion</div>
+        <div class="layer-desc">Prepend <code>-</code> to any keyword or operator to exclude results containing that term. Works with any operator: <code>-inurl:blog</code>, <code>-site:subdomain.target.com</code>, <code>-intitle:search</code>.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Type</div>
+        <div class="layer-ex-val" style="color:var(--bool-c);">Exclusion</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">site:target.com -inurl:blog</div>
+      </div>
+    </div>
+
+    <!-- OR row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--bool-c);">OR / |</div>
+        <div class="layer-sublabel">Logical OR</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Logical OR — Either Term Matches</div>
+        <div class="layer-desc">Returns results matching either the left or right term. <code>OR</code> must be uppercase. The pipe <code>|</code> is an identical alias. Useful for multi-TLD recon or covering multiple keyword variants simultaneously.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Type</div>
+        <div class="layer-ex-val" style="color:var(--bool-c);">Logical OR</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">site:gov OR site:mil</div>
+      </div>
+    </div>
+
+    <!-- wildcard row -->
+    <div class="layer-row">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--bool-c);">* wildcard</div>
+        <div class="layer-sublabel">Wildcard</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Wildcard Word Placeholder</div>
+        <div class="layer-desc">Inside a quoted phrase, <code>*</code> matches any single word. <code>"index of *"</code> matches any directory listing title. Useful when the exact wording varies but the pattern is known.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Type</div>
+        <div class="layer-ex-val" style="color:var(--bool-c);">Wildcard</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">"index of *"</div>
+      </div>
+    </div>
+
+    <!-- range row -->
+    <div class="layer-row" style="border-bottom:none;">
+      <div class="layer-num">
+        <div class="layer-badge" style="color:var(--bool-c);">N..M</div>
+        <div class="layer-sublabel">Range</div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-name">Number Range</div>
+        <div class="layer-desc">Two dots between numbers define an inclusive range. Primarily used with prices, years, or version numbers. Example: <code>CVE 2021..2024</code> finds vulnerability references in that year range.</div>
+      </div>
+      <div class="layer-example">
+        <div class="layer-ex-label">Type</div>
+        <div class="layer-ex-val" style="color:var(--bool-c);">Number range</div>
+        <div class="layer-ex-label" style="margin-top:8px;">Example</div>
+        <div class="layer-ex-val" style="color:var(--text2);font-size:10.5px;">CVE 2020..2024 filetype:pdf</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout callout-info mt-4">
+    <div class="callout-key">Key Insight</div>
+    <strong>intitle:</strong> and <strong>intext:</strong> are the most commonly confused pair. Remember: <code>intitle:</code> reads the invisible metadata tag (what the developer named the page for SEO/browser purposes). <code>intext:</code> reads the actual words a visitor sees when they open the page. They can be completely different — a login page title might say "Secure Portal" while the body says "Enter your admin password".
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S2 — SEARCH RESULT ANATOMY
+══════════════════════════════════════════ -->
+<section class="section" id="s2">
+  <div class="section-head">
+    <div class="sec-num"><span>02</span> — Search Result Anatomy</div>
+    <h2 class="sec-title">What Google Displays — And What Each Operator Targets</h2>
+    <p class="sec-sub">
+      A Google search result has three visible parts. The color-coded annotations below show exactly which operator maps to which part of the result card.
+    </p>
+  </div>
+
+  <div class="result-anatomy-wrap">
+    <!-- Left: Google result mockup -->
+    <div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Annotated Search Result</div>
+      <div class="google-mock">
+
+        <!-- Domain / breadcrumb row -->
+        <div class="gm-row">
+          <div class="gm-favicon"></div>
+          <div>
+            <div class="gm-domain">target.com</div>
+            <div class="gm-breadcrumb">target.com › admin › login</div>
+          </div>
+        </div>
+
+        <!-- URL row — inurl -->
+        <div class="gm-url-line">
+          <span style="color:#188038;font-size:12px;">https://</span><span style="color:#202124;font-weight:600;">target.com</span><span style="color:#1558d6;">/admin/</span><span style="color:#1558d6;">login.php</span><span style="color:#e37400;">?redirect=dashboard</span>
+          <span class="atag atag-url">← inurl:</span>
+        </div>
+
+        <!-- Title row — intitle -->
+        <div class="gm-title">
+          Admin Login Panel — Secure Management Dashboard
+          <span class="atag atag-title">← intitle:</span>
+        </div>
+
+        <!-- Snippet row — intext + inanchor -->
+        <div class="gm-snippet">
+          Enter your <strong>username</strong> and <strong>password</strong> to access the admin panel.
+          Default credentials are <strong>admin/admin</strong>. New here?
+          <a class="gm-link">Click here to register</a>
+          <span class="atag atag-text">← intext:</span>
+          <span class="atag atag-anchor">← inanchor:</span>
+        </div>
+      </div>
+
+      <!-- Below card: breakdown rows -->
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--line);border-radius:6px;">
+          <span class="atag atag-title" style="min-width:80px;text-align:center;">intitle:</span>
+          <span style="font-size:12.5px;color:var(--text2);">The <strong style="color:var(--white);">blue heading</strong> — the <code>&lt;title&gt;</code> HTML tag. Set by the developer. NOT the h1 on the page.</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--line);border-radius:6px;">
+          <span class="atag atag-url" style="min-width:80px;text-align:center;">inurl:</span>
+          <span style="font-size:12.5px;color:var(--text2);">The <strong style="color:var(--white);">green/blue URL</strong> — full address including path and query parameters.</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--line);border-radius:6px;">
+          <span class="atag atag-text" style="min-width:80px;text-align:center;">intext:</span>
+          <span style="font-size:12.5px;color:var(--text2);">The <strong style="color:var(--white);">gray snippet</strong> — actual visible body content extracted from the page.</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--line);border-radius:6px;">
+          <span class="atag atag-anchor" style="min-width:80px;text-align:center;">inanchor:</span>
+          <span style="font-size:12.5px;color:var(--text2);">The <strong style="color:var(--white);">underlined link text</strong> — text inside <code>&lt;a&gt;</code> hyperlinks on the page.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Legend cards -->
+    <div class="legend-list">
+      <div class="legend-card">
+        <div class="lc-dot" style="background:var(--title-c);color:var(--title-c);"></div>
+        <div class="lc-text">
+          <div class="lc-op" style="color:var(--title-c);">intitle: / allintitle:</div>
+          <div class="lc-desc">Reads the HTML <code>&lt;title&gt;</code> tag — the text in the browser tab. Developers set this independently from visual headings.</div>
+        </div>
+      </div>
+      <div class="legend-card">
+        <div class="lc-dot" style="background:var(--url-c);color:var(--url-c);"></div>
+        <div class="lc-text">
+          <div class="lc-op" style="color:var(--url-c);">inurl: / allinurl:</div>
+          <div class="lc-desc">Scans the address string. Matches subdomain, directory path, filename, and query parameters.</div>
+        </div>
+      </div>
+      <div class="legend-card">
+        <div class="lc-dot" style="background:var(--text-c);color:var(--text-c);"></div>
+        <div class="lc-text">
+          <div class="lc-op" style="color:var(--text-c);">intext: / allintext:</div>
+          <div class="lc-desc">Searches all visible page body text — paragraphs, error messages, config output, headings, table cells.</div>
+        </div>
+      </div>
+      <div class="legend-card">
+        <div class="lc-dot" style="background:var(--anchor-c);color:var(--anchor-c);"></div>
+        <div class="lc-text">
+          <div class="lc-op" style="color:var(--anchor-c);">inanchor: / allinanchor:</div>
+          <div class="lc-desc">Targets the visible text of clickable links — not the href destination, but the words you click on.</div>
+        </div>
+      </div>
+      <div class="legend-card">
+        <div class="lc-dot" style="background:var(--site-c);color:var(--site-c);"></div>
+        <div class="lc-text">
+          <div class="lc-op" style="color:var(--site-c);">site:</div>
+          <div class="lc-desc">Restricts all results to one domain. Not a text search — a scope filter. Always combine with other operators.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S3 — PAGE ANATOMY (Browser Mockup)
+══════════════════════════════════════════ -->
+<section class="section" id="s3">
+  <div class="section-head">
+    <div class="sec-num"><span>03</span> — Inside the Page</div>
+    <h2 class="sec-title">What Each Operator Actually Reads</h2>
+    <p class="sec-sub">
+      Here is a full browser mockup of a real-style page — every element annotated to show exactly which operator scans which part of the HTML structure.
+    </p>
+  </div>
+
+  <div class="browser-mock">
+    <!-- Tab bar -->
+    <div class="browser-chrome">
+      <div class="browser-tab-bar">
+        <div class="browser-tab">
+          <div class="browser-tab-favicon"></div>
+          <div class="browser-tab-title">Admin Login — Target.com Security Panel</div>
+          <div class="browser-tab-annotation">
+            <span class="atag atag-title">← intitle: reads this</span>
+          </div>
+        </div>
+      </div>
+      <!-- Address bar -->
+      <div class="browser-addr">
+        <div class="browser-dots-wrap">
+          <div class="bdot" style="background:#ff5f57"></div>
+          <div class="bdot" style="background:#ffbd2e"></div>
+          <div class="bdot" style="background:#28c840"></div>
+        </div>
+        <div class="browser-addr-bar">
+          <span class="url-https">https://</span>
+          <span class="url-domain">target.com</span>
+          <span class="url-path">/admin/login.php</span>
+          <span class="url-param">?id=1&redirect=dashboard</span>
+          <span class="url-ann"><span class="atag atag-url">← inurl: reads all of this</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page body -->
+    <div class="browser-body">
+      <div class="page-h1">
+        Welcome to the Admin Panel
+        <span class="page-h1-note">⚠ This is &lt;h1&gt; — NOT what intitle: scans</span>
+      </div>
+
+      <div style="height:12px;"></div>
+
+      <div class="page-body-text">
+        Please enter your <strong>username</strong> and <strong>password</strong> to continue.
+        Default credentials are <strong>admin / admin</strong>. If you are locked out,
+        contact your system administrator. This panel controls all user accounts,
+        logs, and server configuration.
+        <span class="atag atag-text" style="margin-left:6px;">← intext: scans all visible text here</span>
+      </div>
+
+      <div style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:6px;padding:16px 18px;margin-bottom:16px;font-size:13px;color:#4d5156;">
+        <div style="margin-bottom:8px;font-weight:600;color:#202124;">Sign In</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input style="border:1px solid #dadce0;padding:8px 12px;border-radius:4px;font-size:13px;color:#202124;background:#fff;" placeholder="Username" disabled>
+          <input type="password" style="border:1px solid #dadce0;padding:8px 12px;border-radius:4px;font-size:13px;background:#fff;" placeholder="Password" disabled>
+        </div>
+      </div>
+
+      <div class="page-link-row">
+        <a>Forgot your password?</a> &nbsp;|&nbsp;
+        <a>Click here to register</a> &nbsp;|&nbsp;
+        <a>Reset admin credentials</a>
+        <span class="atag atag-anchor" style="margin-left:8px;">← inanchor: scans these link texts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Annotation table -->
+  <div class="ann-table">
+    <div class="ann-row">
+      <div class="ann-op" style="color:var(--title-c);">intitle:</div>
+      <div class="ann-explanation">
+        Reads: <strong>"Admin Login — Target.com Security Panel"</strong> — the browser tab text. 
+        This is the <code>&lt;title&gt;</code> tag in HTML head. The visible <code>&lt;h1&gt;</code> "Welcome to the Admin Panel" is a completely separate element — intitle: ignores it.
+      </div>
+    </div>
+    <div class="ann-row">
+      <div class="ann-op" style="color:var(--url-c);">inurl:</div>
+      <div class="ann-explanation">
+        Reads: <strong>"target.com/admin/login.php?id=1&redirect=dashboard"</strong> — the full address. 
+        Matches against any part: <code>inurl:/admin/</code>, <code>inurl:login.php</code>, <code>inurl:"?id="</code>, or <code>inurl:redirect</code> all match this URL.
+      </div>
+    </div>
+    <div class="ann-row">
+      <div class="ann-op" style="color:var(--text-c);">intext:</div>
+      <div class="ann-explanation">
+        Reads: all visible paragraph text — <strong>"username", "password", "admin/admin", "system administrator"</strong> etc. 
+        If it's rendered on screen, intext: finds it. Perfect for locating exposed credentials, error messages, or config values.
+      </div>
+    </div>
+    <div class="ann-row">
+      <div class="ann-op" style="color:var(--anchor-c);">inanchor:</div>
+      <div class="ann-explanation">
+        Reads: <strong>"Forgot your password?"</strong>, <strong>"Click here to register"</strong>, <strong>"Reset admin credentials"</strong> — only the visible text of the <code>&lt;a&gt;</code> links. Not the href URLs — the human-readable label text.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-warn mt-4">
+    <div class="callout-key">Critical Distinction — intitle: vs intext:</div>
+    The <code>&lt;title&gt;</code> tag and the <code>&lt;h1&gt;</code> heading are independent. A developer sets the title tag for SEO and browser display; the h1 is the visible page heading. <br><br>
+    <strong>intitle:</strong> only reads the <code>&lt;title&gt;</code>. The h1 is part of the body — <strong>intext:</strong> reads it, not intitle:.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S4 — OPERATOR DEEP DIVE
+══════════════════════════════════════════ -->
+<section class="section" id="s4">
+  <div class="section-head">
+    <div class="sec-num"><span>04</span> — Operator Guide</div>
+    <h2 class="sec-title">Complete Operator Reference</h2>
+    <p class="sec-sub">
+      All operators organized into four categories: Layer Targeting, Scope &amp; Type Filters, Google Meta Operators, and Boolean &amp; Syntax Modifiers. Each card includes single vs. all behavior, practical security examples, and copy-ready dorks.
+    </p>
+  </div>
+
+  <div class="op-cards">
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  CATEGORY A — LAYER TARGETING        ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <div class="cat-header">
+      <div class="cat-num">Category A</div>
+      <div class="cat-title">Layer Targeting Operators</div>
+      <div class="cat-pill" style="color:var(--title-c);border-color:rgba(56,189,248,0.3);background:rgba(56,189,248,0.06);">4 operators + all- variants</div>
+    </div>
+    <p class="cat-desc">These operators target a specific structural layer of a webpage — the HTML title tag, the URL, the visible body text, or the anchor link text. Each one locks your keyword to exactly one layer. Master these first; they're the backbone of every effective dork.</p>
+
+    <!-- ── intitle / allintitle ── -->
+    <div class="op-card" style="border-color:rgba(56,189,248,0.2);">
+      <div class="op-card-header" style="background:rgba(56,189,248,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.25);">🔵</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--title-c);">intitle: &nbsp;&nbsp;/&nbsp;&nbsp; allintitle:</div>
+          <div class="op-target-line">Scans → HTML &lt;title&gt; tag (browser tab text)</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--title-c);border-color:rgba(56,189,248,0.3);background:rgba(56,189,248,0.07);">Title Tag</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Searches the <code>&lt;title&gt;</code> HTML element — the text that appears in the browser tab and as the blue clickable heading in Google results. Developers set this tag for SEO purposes, so it typically reveals the true purpose of a page.
+          <br><br>
+          <strong>Important:</strong> This is NOT the visible <code>&lt;h1&gt;</code> or <code>&lt;h2&gt;</code> heading rendered inside the page. Those two things are completely separate. The title tag lives in <code>&lt;head&gt;</code>; the h1 lives in <code>&lt;body&gt;</code>.
+        </p>
+
+        <div class="single-vs-all">
+          <div class="sva-label">Single vs. All — The Key Difference</div>
+          <div class="sva-grid">
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(56,189,248,0.1);color:var(--title-c);border:1px solid rgba(56,189,248,0.3);">intitle:</span>
+                <span class="sva-col-title">One word must be in title</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--title-c);" onclick="cp(this)" data-v="intitle:admin login">intitle:admin login</div>
+                <div class="sva-explanation">
+                  <strong style="color:var(--white);">"admin"</strong> must be in the <code>&lt;title&gt;</code> tag.<br>
+                  <strong style="color:var(--white);">"login"</strong> can be anywhere — title, body, URL, anywhere on the page.<br><br>
+                  Result: broad — catches more pages.
+                </div>
+              </div>
+            </div>
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(56,189,248,0.1);color:var(--title-c);border:1px solid rgba(56,189,248,0.3);">allintitle:</span>
+                <span class="sva-col-title">All words must be in title</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--title-c);" onclick="cp(this)" data-v="allintitle:admin login">allintitle:admin login</div>
+                <div class="sva-explanation">
+                  Both <strong style="color:var(--white);">"admin"</strong> AND <strong style="color:var(--white);">"login"</strong> must appear in the <code>&lt;title&gt;</code> tag.<br>
+                  Neither word is allowed to be elsewhere — both must be in the title.<br><br>
+                  Result: narrow — more precise, fewer results.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sva-difference">
+            <strong>Rule:</strong> With <code>intitle:</code>, only the first word is locked to the title — the rest float freely anywhere.<br>
+            With <code>allintitle:</code>, every word is locked to the title — nothing floats.
+          </div>
+        </div>
+
+        <div class="examples-section">
+          <div class="examples-label">Real Security Examples</div>
+          <div class="example-list">
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--title-c);">intitle:"index of" "parent directory"</div>
+                <div class="example-purpose">Finds open directory listings — web servers with directory browsing enabled. Classic for finding exposed file repositories.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('intitle:\"index of\" \"parent directory\"')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--title-c);">intitle:"phpMyAdmin" inurl:"/pma/"</div>
+                <div class="example-purpose">Finds exposed phpMyAdmin database interfaces. <code>intitle:</code> confirms it's phpMyAdmin; <code>inurl:</code> confirms the /pma/ path.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('intitle:\"phpMyAdmin\" inurl:\"/pma/\"')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--title-c);">allintitle:admin control panel site:target.com</div>
+                <div class="example-purpose">All three words must be in the title — highly specific. Only returns pages where the developer explicitly titled it with all those terms.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('allintitle:admin control panel site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--title-c);">intitle:"Kibana" inurl:":5601"</div>
+                <div class="example-purpose">Finds exposed Kibana data dashboards running on port 5601 — often left open without authentication.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('intitle:\"Kibana\" inurl:\":5601\"')">⎘ COPY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── inurl / allinurl ── -->
+    <div class="op-card" style="border-color:rgba(74,222,128,0.2);">
+      <div class="op-card-header" style="background:rgba(74,222,128,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.25);">🟢</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--url-c);">inurl: &nbsp;&nbsp;/&nbsp;&nbsp; allinurl:</div>
+          <div class="op-target-line">Scans → Full URL — path, filename, query parameters</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--url-c);border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.07);">URL</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Searches within the URL string — matches against any part of the address: subdomain, directory path, filename, or query parameter key/value. This is typically the most powerful operator for finding specific admin endpoints, vulnerable parameters, or exposed paths.
+          <br><br>
+          <strong>URL breakdown:</strong> <code style="font-size:12px;">https://target.com<span style="color:var(--url-c);">/admin/edit.php</span><span style="color:var(--text-c);">?id=1</span></code> — inurl: matches anything in the highlighted portions.
+        </p>
+
+        <div class="single-vs-all">
+          <div class="sva-label">Single vs. All — The Key Difference</div>
+          <div class="sva-grid">
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(74,222,128,0.1);color:var(--url-c);border:1px solid rgba(74,222,128,0.3);">inurl:</span>
+                <span class="sva-col-title">One term must be in URL</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--url-c);" onclick="cp(this)" data-v="inurl:admin login">inurl:admin login</div>
+                <div class="sva-explanation">
+                  <strong style="color:var(--white);">"admin"</strong> must be somewhere in the URL path.<br>
+                  <strong style="color:var(--white);">"login"</strong> can be in the URL, title, body, or anywhere.<br><br>
+                  Matches: /admin/home, admin.php, /users/admin etc.
+                </div>
+              </div>
+            </div>
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(74,222,128,0.1);color:var(--url-c);border:1px solid rgba(74,222,128,0.3);">allinurl:</span>
+                <span class="sva-col-title">All terms must be in URL</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--url-c);" onclick="cp(this)" data-v="allinurl:admin login php">allinurl:admin login php</div>
+                <div class="sva-explanation">
+                  <strong style="color:var(--white);">All three terms</strong> must appear within the URL.<br>
+                  URL like <code>/admin/login.php</code> matches — all three terms present.<br><br>
+                  Result: very specific, few results.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sva-difference">
+            <strong>Rule:</strong> <code>inurl:admin login</code> — only "admin" is required in URL. "login" floats anywhere.<br>
+            <code>allinurl:admin login</code> — both "admin" AND "login" must be in the URL itself.
+          </div>
+        </div>
+
+        <div class="examples-section">
+          <div class="examples-label">Real Security Examples</div>
+          <div class="example-list">
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--url-c);">inurl:/wp-admin/ site:target.com</div>
+                <div class="example-purpose">Finds WordPress admin login pages on a specific target. Extremely common CMS attack surface.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('inurl:/wp-admin/ site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--url-c);">inurl:"?id=" site:target.com</div>
+                <div class="example-purpose">Finds pages with an integer parameter — classic SQLi attack surface. The <code>?id=</code> suggests unsanitized database query input.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('inurl:\"?id=\" site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--url-c);">inurl:".php?file=" site:target.com</div>
+                <div class="example-purpose">URL parameter named "file" — classic Local File Inclusion (LFI) attack vector. Suggests a PHP file is loading content by filename from user input.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('inurl:\".php?file=\" site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--url-c);">allinurl:admin config php site:target.com</div>
+                <div class="example-purpose">URL must contain admin, config, and php — very specific. Targets admin configuration PHP files directly.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('allinurl:admin config php site:target.com')">⎘ COPY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── intext / allintext ── -->
+    <div class="op-card" style="border-color:rgba(251,191,36,0.2);">
+      <div class="op-card-header" style="background:rgba(251,191,36,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.25);">🟡</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--text-c);">intext: &nbsp;&nbsp;/&nbsp;&nbsp; allintext:</div>
+          <div class="op-target-line">Scans → All visible page body text content</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--text-c);border-color:rgba(251,191,36,0.3);background:rgba(251,191,36,0.07);">Body Text</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Searches all visible text rendered in the page body — paragraphs, error messages, labels, headings, table content, form text, and any other human-readable output. If a person visiting the page can read it, <code>intext:</code> can find it.
+          <br><br>
+          <strong>Note:</strong> By default, Google already searches body text for plain keyword queries. The power of <code>intext:</code> comes from <em>combining</em> it with other operators — locking a term to the body while using inurl: or filetype: to narrow by structure.
+        </p>
+
+        <div class="single-vs-all">
+          <div class="sva-label">Single vs. All — The Key Difference</div>
+          <div class="sva-grid">
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(251,191,36,0.1);color:var(--text-c);border:1px solid rgba(251,191,36,0.3);">intext:</span>
+                <span class="sva-col-title">One word must be in body</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--text-c);" onclick="cp(this)" data-v='intext:"password" inurl:config'>intext:"password" inurl:config</div>
+                <div class="sva-explanation">
+                  <strong style="color:var(--white);">"password"</strong> must appear in the page body text.<br>
+                  <strong style="color:var(--white);">"config"</strong> must appear in the URL.<br><br>
+                  Both are independently locked to their respective layers.
+                </div>
+              </div>
+            </div>
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(251,191,36,0.1);color:var(--text-c);border:1px solid rgba(251,191,36,0.3);">allintext:</span>
+                <span class="sva-col-title">All words must be in body</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--text-c);" onclick="cp(this)" data-v="allintext:username password database">allintext:username password database</div>
+                <div class="sva-explanation">
+                  All three words must appear in the body text of the same page.<br>
+                  None can be in just the URL or title — all locked to body content.<br><br>
+                  Good for finding credential exposure.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sva-difference">
+            <strong>Rule:</strong> <code>intext:username password</code> — only "username" is locked to body; "password" floats anywhere.<br>
+            <code>allintext:username password</code> — both must appear in the page body specifically.
+          </div>
+        </div>
+
+        <div class="examples-section">
+          <div class="examples-label">Real Security Examples</div>
+          <div class="example-list">
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--text-c);">intext:"DB_PASSWORD" intext:"DB_HOST" filetype:env</div>
+                <div class="example-purpose">Finds exposed .env config files containing both DB_PASSWORD and DB_HOST in their content — direct database credential exposure.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('intext:\"DB_PASSWORD\" intext:\"DB_HOST\" filetype:env')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--text-c);">intext:"sql syntax near" intext:"mysql_fetch"</div>
+                <div class="example-purpose">Finds pages leaking MySQL error messages — both strings appearing together strongly signals an SQLi vulnerability.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('intext:\"sql syntax near\" intext:\"mysql_fetch\"')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--text-c);">intext:"Fatal error" intext:"stack trace" site:target.com</div>
+                <div class="example-purpose">Finds pages with application stack traces — these leak internal file paths, function names, and sometimes credentials.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('intext:\"Fatal error\" intext:\"stack trace\" site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--text-c);">allintext:username password login filetype:log</div>
+                <div class="example-purpose">All three words must be in a log file's content — finds log files with plaintext credential dumps.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('allintext:username password login filetype:log')">⎘ COPY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── inanchor / allinanchor ── -->
+    <div class="op-card" style="border-color:rgba(167,139,250,0.2);">
+      <div class="op-card-header" style="background:rgba(167,139,250,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.25);">🟣</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--anchor-c);">inanchor: &nbsp;&nbsp;/&nbsp;&nbsp; allinanchor:</div>
+          <div class="op-target-line">Scans → Clickable hyperlink text (&lt;a&gt; tag visible label)</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--anchor-c);border-color:rgba(167,139,250,0.3);background:rgba(167,139,250,0.07);">Anchor Text</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Targets the visible text of hyperlinks — what you actually click on, not the URL those links point to. For example, in <code>&lt;a href="/admin"&gt;Click here to access admin&lt;/a&gt;</code>, inanchor: reads <em>"Click here to access admin"</em>, not <em>"/admin"</em>.
+          <br><br>
+          <strong>Use case:</strong> Finding pages that are linked using specific keywords, mapping navigation structures, or discovering hidden admin sections that are linked from public pages but not directly indexed.
+        </p>
+
+        <div class="single-vs-all">
+          <div class="sva-label">Single vs. All — The Key Difference</div>
+          <div class="sva-grid">
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(167,139,250,0.1);color:var(--anchor-c);border:1px solid rgba(167,139,250,0.3);">inanchor:</span>
+                <span class="sva-col-title">One word must be in link text</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--anchor-c);" onclick="cp(this)" data-v='inanchor:"admin login"'>inanchor:"admin login"</div>
+                <div class="sva-explanation">
+                  The phrase <strong style="color:var(--white);">"admin login"</strong> must appear as anchor text in at least one link on the page.<br><br>
+                  Finds pages that have a link literally labeled "admin login".
+                </div>
+              </div>
+            </div>
+            <div class="sva-col">
+              <div class="sva-col-header">
+                <span class="sva-badge" style="background:rgba(167,139,250,0.1);color:var(--anchor-c);border:1px solid rgba(167,139,250,0.3);">allinanchor:</span>
+                <span class="sva-col-title">All words must be in link text</span>
+              </div>
+              <div class="sva-col-body">
+                <div class="sva-dork" style="color:var(--anchor-c);" onclick="cp(this)" data-v="allinanchor:admin control panel access">allinanchor:admin control panel access</div>
+                <div class="sva-explanation">
+                  All four words must appear in anchor text on the page.<br><br>
+                  Very specific — only pages with a link labeled something like "Admin Control Panel Access".
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sva-difference">
+            <strong>Clarification:</strong> inanchor: is about anchor text on the page — the link label text. It is <strong>not</strong> searching where the link points to (that would be inurl:). It reads the human-readable clickable text of the &lt;a&gt; element.
+          </div>
+        </div>
+
+        <div class="examples-section">
+          <div class="examples-label">Real Security Examples</div>
+          <div class="example-list">
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--anchor-c);">inanchor:"reset password" site:target.com</div>
+                <div class="example-purpose">Finds pages with "reset password" links — useful for mapping authentication flows and finding unlinked password reset pages.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('inanchor:\"reset password\" site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--anchor-c);">inanchor:"admin panel" inurl:admin site:target.com</div>
+                <div class="example-purpose">Pages with "admin panel" anchor text AND /admin in URL — triangulates high-confidence admin pages.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('inanchor:\"admin panel\" inurl:admin site:target.com')">⎘ COPY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  CATEGORY B — SCOPE & TYPE FILTERS   ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <div class="cat-header">
+      <div class="cat-num">Category B</div>
+      <div class="cat-title">Scope &amp; Type Filters</div>
+      <div class="cat-pill" style="color:var(--site-c);border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.06);">site: &nbsp;·&nbsp; filetype: &nbsp;·&nbsp; ext:</div>
+    </div>
+    <p class="cat-desc">These operators don't search page content — they constrain scope. <code>site:</code> limits results to a domain. <code>filetype:</code> (and its identical alias <code>ext:</code>) limits results to a file type. Always combine these with Category A operators for precision.</p>
+
+    <!-- ── site: ── -->
+    <div class="op-card" style="border-color:rgba(248,113,113,0.2);">
+      <div class="op-card-header" style="background:rgba(248,113,113,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.25);">🔴</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--site-c);">site:</div>
+          <div class="op-target-line">Scope → Restrict all results to a specific domain or subdomain</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--site-c);border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.07);">Domain Scope</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Restricts every result in the query to a specific domain. It is the most-used operator in penetration testing recon. <strong>It is not a text search</strong> — it doesn't look inside page content. It is a scope filter that limits the domain Google will return results from.
+          <br><br>
+          <strong>Subdomain behavior:</strong> <code>site:target.com</code> includes all subdomains (api.target.com, mail.target.com, dev.target.com). To scope to one subdomain only, be explicit: <code>site:dev.target.com</code>.
+          <br><br>
+          <strong>No "allsite:" variant exists.</strong>
+        </p>
+
+        <div class="syntax-examples">
+          <div class="examples-label">Real Security Examples</div>
+          <div class="example-list">
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--site-c);">site:target.com -www</div>
+                <div class="example-purpose">All results from target.com excluding the main www subdomain — enumerates dev, api, staging, mail, and other subdomains.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('site:target.com -www')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--site-c);">site:target.com intitle:"index of"</div>
+                <div class="example-purpose">Finds open directory listings across the entire target domain. One of the most valuable recon dorks.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('site:target.com intitle:\"index of\"')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--site-c);">site:*.target.com</div>
+                <div class="example-purpose">Wildcard subdomain enumeration — the asterisk forces Google to show results from all discovered subdomains separately.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('site:*.target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--site-c);">site:gov filetype:xls intext:password</div>
+                <div class="example-purpose">Finds government Excel files with "password" in the content — government domains are often misconfigured and expose documents.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('site:gov filetype:xls intext:password')">⎘ COPY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── filetype: / ext: ── -->
+    <div class="op-card" style="border-color:rgba(251,146,60,0.2);">
+      <div class="op-card-header" style="background:rgba(251,146,60,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(251,146,60,0.1);border-color:rgba(251,146,60,0.25);">🟠</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--file-c);">filetype: &nbsp;&nbsp;/&nbsp;&nbsp; ext: <span class="op-alias">identical alias</span></div>
+          <div class="op-target-line">Filter → Restrict results to a specific file extension / MIME type</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--file-c);border-color:rgba(251,146,60,0.3);background:rgba(251,146,60,0.07);">File Type</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Restricts results to indexed files of a specific extension. <code>filetype:pdf</code> and <code>ext:pdf</code> are functionally identical — Google treats them the same. No "allfiletype:" variant exists.
+          <br><br>
+          <strong>High-value extensions for security research:</strong> <code>env</code>, <code>sql</code>, <code>log</code>, <code>bak</code>, <code>conf</code>, <code>config</code>, <code>pem</code>, <code>key</code>, <code>txt</code>, <code>xml</code>, <code>json</code>, <code>yml</code>, <code>yaml</code>, <code>xls</code>, <code>xlsx</code>, <code>csv</code>, <code>php</code>. Each extension has different leak potential.
+        </p>
+
+        <div class="callout callout-warn" style="margin-bottom:20px;">
+          <div class="callout-key">filetype: vs ext: — Use Either</div>
+          Both are accepted by Google and return identical results. <code>filetype:</code> is more widely documented; <code>ext:</code> is shorter to type. Some older resources use one or the other — they mean the same thing.
+        </div>
+
+        <div class="syntax-examples">
+          <div class="examples-label">Real Security Examples — High-Value Extensions</div>
+          <div class="example-list">
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--file-c);">filetype:env intext:"APP_SECRET" site:target.com</div>
+                <div class="example-purpose">Exposed Laravel/Node .env files containing the application secret key — allows session forgery and cryptographic attacks.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('filetype:env intext:\"APP_SECRET\" site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--file-c);">ext:sql intext:"INSERT INTO" intext:"password"</div>
+                <div class="example-purpose">Exposed SQL database dumps containing INSERT statements with password values — often plaintext or weakly hashed.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('ext:sql intext:\"INSERT INTO\" intext:\"password\"')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--file-c);">filetype:log intext:"username" intext:"password" site:target.com</div>
+                <div class="example-purpose">Application log files containing username and password strings — authentication logs are a goldmine for credential harvesting.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('filetype:log intext:\"username\" intext:\"password\" site:target.com')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--file-c);">filetype:pem intext:"PRIVATE KEY"</div>
+                <div class="example-purpose">Exposed PEM files containing private keys — SSL certificates, SSH keys, or code-signing keys leaked to public web servers.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('filetype:pem intext:\"PRIVATE KEY\"')">⎘ COPY</button>
+            </div>
+            <div class="example-item">
+              <div class="example-dork-col">
+                <div class="example-dork-text" style="color:var(--file-c);">ext:yml intext:"password:" intext:"host:"</div>
+                <div class="example-purpose">YAML config files (Docker Compose, Kubernetes, Rails database.yml) with credentials in plaintext.</div>
+              </div>
+              <button class="copy-btn" onclick="cp2('ext:yml intext:\"password:\" intext:\"host:\"')">⎘ COPY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║  CATEGORY C — GOOGLE META OPERATORS      ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <div id="s4b" style="scroll-margin-top:calc(var(--nav-h) + 16px);"></div>
+    <div class="cat-header">
+      <div class="cat-num">Category C</div>
+      <div class="cat-title">Google Meta Operators</div>
+      <div class="cat-pill" style="color:var(--meta-c);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.06);">cache: &nbsp;·&nbsp; related: &nbsp;·&nbsp; info:</div>
+    </div>
+    <p class="cat-desc">These operators don't search page content or structure. They query Google's own index metadata — its cached snapshots, its topical similarity graph, and its stored knowledge about URLs. They're recon operators, not content operators.</p>
+
+    <!-- ── cache: ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(34,211,238,0.2);">
+      <div class="op-card-header" style="background:rgba(34,211,238,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.25);">🗃</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--meta-c);">cache:</div>
+          <div class="op-target-line">Meta → Shows Google's stored snapshot of a URL from its last crawl</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--meta-c);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.07);">Cache Index</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Instead of loading the live page, <code>cache:</code> loads the version Google archived during its last crawl. The snapshot date is displayed at the top. No "allcache:" variant exists.
+          <br><br>
+          <strong>Security use cases:</strong> (1) View a page that has since been taken down or modified. (2) Access content when the live site is rate-limiting, firewalled, or blocking your IP. (3) Find pages that exposed sensitive data before admins removed them. (4) Compare cached vs. live versions to spot recent changes.
+          <br><br>
+          <strong>Limitation:</strong> Google is reducing cache availability — as of 2024, many sites no longer have cached versions. If cache: returns nothing, try the Wayback Machine at web.archive.org.
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns</div>
+          <div class="syntax-row" onclick="cp2('cache:target.com/admin')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--meta-c);">cache:target.com/admin</div>
+            <div class="syntax-meaning">View Google's last snapshot of the /admin path — useful if it now redirects or returns 403.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('cache:target.com/config.php')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--meta-c);">cache:target.com/config.php</div>
+            <div class="syntax-meaning">Check if Google cached a config file before it was locked down — may still show exposed credentials.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('cache:target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--meta-c);">cache:target.com</div>
+            <div class="syntax-meaning">Load the homepage snapshot — quick check on when Google last crawled the site.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── related: ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(34,211,238,0.2);">
+      <div class="op-card-header" style="background:rgba(34,211,238,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.25);">🔗</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--meta-c);">related:</div>
+          <div class="op-target-line">Meta → Returns websites topically similar to a given domain</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--meta-c);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.07);">Similarity Graph</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Queries Google's topical similarity index to return websites it considers similar in content, purpose, or industry to the target domain. No "allrelated:" variant exists.
+          <br><br>
+          <strong>Security use cases:</strong> (1) Competitor infrastructure mapping — companies in the same space may share hosting, vendors, or technology stacks. (2) Finding affiliate, mirror, or partner sites associated with a target. (3) Passive recon without touching the target directly. (4) Bug bounty expansion — similar companies often have overlapping infrastructure or shared codebases.
+          <br><br>
+          <strong>Note:</strong> Works best on well-known domains. Lesser-known targets may return no results.
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns</div>
+          <div class="syntax-row" onclick="cp2('related:target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--meta-c);">related:target.com</div>
+            <div class="syntax-meaning">Returns sites Google considers similar — map the target's industry ecosystem and find potential affiliate domains.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('related:target.com site:gov')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--meta-c);">related:target.com site:gov</div>
+            <div class="syntax-meaning">Similar .gov domains — useful for scoping government contractor or supplier recon.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── info: ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(34,211,238,0.2);">
+      <div class="op-card-header" style="background:rgba(34,211,238,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.25);">ℹ</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--meta-c);">info:</div>
+          <div class="op-target-line">Meta → Displays Google's summary card about a specific URL</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--meta-c);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.07);">Knowledge Card</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Shows a Google knowledge summary for a given URL — links to view its cached version, find similar pages, and see pages linking to it. Acts as a quick recon pivot point from a single known URL.
+          <br><br>
+          <strong>Security use cases:</strong> (1) Quick snapshot of what Google knows about a specific URL. (2) Discover related pages and inbound links that reveal the site's full index surface. (3) Useful as a starting point before deep-diving with other operators.
+          <br><br>
+          <strong>Note:</strong> <code>info:</code> functionality has been reduced in recent Google updates. Some features only appear for well-indexed domains.
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns</div>
+          <div class="syntax-row" onclick="cp2('info:target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--meta-c);">info:target.com</div>
+            <div class="syntax-meaning">Quick knowledge card — starting recon pivot. Shows cache link, similar pages, and linking pages.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('info:target.com/admin/login.php')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--meta-c);">info:target.com/admin/login.php</div>
+            <div class="syntax-meaning">What does Google know about this specific path? Check if it's indexed and what metadata is available.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║  CATEGORY D — BOOLEAN & SYNTAX MODIFIERS ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <div id="s4c" style="scroll-margin-top:calc(var(--nav-h) + 16px);"></div>
+    <div class="cat-header">
+      <div class="cat-num">Category D</div>
+      <div class="cat-title">Boolean &amp; Syntax Modifiers</div>
+      <div class="cat-pill" style="color:var(--bool-c);border-color:rgba(232,121,249,0.3);background:rgba(232,121,249,0.06);">"phrase" &nbsp;·&nbsp; -minus &nbsp;·&nbsp; OR &nbsp;·&nbsp; * &nbsp;·&nbsp; ..</div>
+    </div>
+    <p class="cat-desc">These aren't operators — they're syntax modifiers that change how Google interprets your query. They apply across all operators. Master these alongside the layer operators and you can build surgical dorks with high signal-to-noise ratio.</p>
+
+    <!-- ── "exact phrase" ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(232,121,249,0.2);">
+      <div class="op-card-header" style="background:rgba(232,121,249,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(232,121,249,0.1);border-color:rgba(232,121,249,0.25);" style="font-size:22px;">"&nbsp;"</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--bool-c);">"exact phrase"</div>
+          <div class="op-target-line">Modifier → Forces exact phrase matching, no synonyms or reordering</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--bool-c);border-color:rgba(232,121,249,0.3);background:rgba(232,121,249,0.07);">Exact Match</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Wrapping a phrase in double quotes tells Google to match it exactly — no synonym substitution, no word reordering, no partial matches. This is critical when you're looking for specific error strings, config keys, or credential patterns that must appear verbatim.
+          <br><br>
+          <strong>Without quotes:</strong> Google may reorder words, use synonyms, and split the phrase across the page.<br>
+          <strong>With quotes:</strong> The exact sequence of words must appear together in that exact order.
+          <br><br>
+          <strong>Combine with operators:</strong> <code>intitle:"Admin Login"</code> means the title tag must contain exactly "Admin Login" — not "Login Admin" or "Admin Panel Login".
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns — Exact Phrases in Security Research</div>
+          <div class="syntax-row" onclick="cp2('\"index of /\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">"index of /"</div>
+            <div class="syntax-meaning">Exact Apache/Nginx open directory listing title — the precise format server auto-generated titles use.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('\"Warning: mysql_connect()\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">"Warning: mysql_connect()"</div>
+            <div class="syntax-meaning">Exact PHP MySQL error string — finds pages leaking database connection errors with host/credentials.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('intitle:"index of" "parent directory"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">intitle:"index of" "parent directory"</div>
+            <div class="syntax-meaning">Both exact phrases — title must contain "index of" AND body must contain "parent directory" (dir listing element).</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('\"-----BEGIN RSA PRIVATE KEY-----\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">"-----BEGIN RSA PRIVATE KEY-----"</div>
+            <div class="syntax-meaning">The exact PEM header for RSA private keys — finds exposed private key files or pages with embedded keys.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('filetype:env \"DB_PASSWORD=\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">filetype:env "DB_PASSWORD="</div>
+            <div class="syntax-meaning">Exact config key in .env files — including the = ensures it's a variable assignment, not just a mention.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── -minus exclusion ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(232,121,249,0.2);">
+      <div class="op-card-header" style="background:rgba(232,121,249,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(232,121,249,0.1);border-color:rgba(232,121,249,0.25);font-family:var(--mono);font-size:22px;color:var(--bool-c);">−</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--bool-c);">-keyword &nbsp;&nbsp;/&nbsp;&nbsp; -operator</div>
+          <div class="op-target-line">Modifier → Excludes results containing the specified term or matching the operator</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--bool-c);border-color:rgba(232,121,249,0.3);background:rgba(232,121,249,0.07);">Exclusion</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Prepend <code>-</code> (no space) to any keyword or operator to exclude results matching that term. Works globally — not just on keywords but on any operator: <code>-inurl:</code>, <code>-intitle:</code>, <code>-site:</code>, <code>-filetype:</code>.
+          <br><br>
+          <strong>Without exclusion:</strong> Broad queries return thousands of noisy, irrelevant results.<br>
+          <strong>With exclusion:</strong> Systematically filter out false positives, known-safe pages, and irrelevant file types.
+          <br><br>
+          <strong>Critical technique:</strong> Chain multiple exclusions: <code>-inurl:login -inurl:signup -intitle:404</code> removes the most common noise sources at once.
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns — Noise Reduction</div>
+          <div class="syntax-row" onclick="cp2('site:target.com -www -inurl:blog -inurl:help')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">site:target.com -www -inurl:blog -inurl:help</div>
+            <div class="syntax-meaning">Enumerate interesting subdomains while filtering out the main www site and known public-facing paths.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('intitle:"index of" -inurl:wordpress -inurl:wp-content')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">intitle:"index of" -inurl:wordpress -inurl:wp-content</div>
+            <div class="syntax-meaning">Find open directories while excluding WordPress plugin/theme directories (most common false positives).</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('filetype:sql intext:\"password\" -site:github.com -site:pastebin.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">filetype:sql intext:"password" -site:github.com -site:pastebin.com</div>
+            <div class="syntax-meaning">Find exposed SQL dumps while excluding the two biggest paste-site noise sources.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('site:target.com -inurl:404 -intitle:\"Page Not Found\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">site:target.com -inurl:404 -intitle:"Page Not Found"</div>
+            <div class="syntax-meaning">Exclude dead pages and error pages from domain enumeration results.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OR / | ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(232,121,249,0.2);">
+      <div class="op-card-header" style="background:rgba(232,121,249,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(232,121,249,0.1);border-color:rgba(232,121,249,0.25);font-family:var(--mono);font-size:14px;color:var(--bool-c);">OR |</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--bool-c);">OR &nbsp;&nbsp;/&nbsp;&nbsp; | (pipe)</div>
+          <div class="op-target-line">Modifier → Logical OR — returns results matching either term (OR must be uppercase)</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--bool-c);border-color:rgba(232,121,249,0.3);background:rgba(232,121,249,0.07);">Logical OR</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Returns results that match either the left OR the right expression. The keyword <code>OR</code> must be uppercase — lowercase "or" is treated as a regular search word. The pipe character <code>|</code> is an identical functional alias.
+          <br><br>
+          <strong>Default Google behavior is AND</strong> — all keywords must appear. OR overrides this to allow either/or matching.
+          <br><br>
+          <strong>Use parentheses for grouping:</strong> <code>(inurl:login OR inurl:signin) site:target.com</code> — groups the OR expression before applying site: to both results.
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns — Covering Multiple Variants</div>
+          <div class="syntax-row" onclick="cp2('site:gov OR site:mil filetype:xls intext:password')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">site:gov OR site:mil filetype:xls intext:password</div>
+            <div class="syntax-meaning">Cover both government TLDs in one query — finds Excel files with passwords on .gov and .mil domains.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('(inurl:login OR inurl:signin OR inurl:auth) site:target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">(inurl:login OR inurl:signin OR inurl:auth) site:target.com</div>
+            <div class="syntax-meaning">Find all authentication endpoints by covering three common URL patterns in one query.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('filetype:env OR filetype:conf OR filetype:cfg intext:\"password\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">filetype:env OR filetype:conf OR filetype:cfg intext:"password"</div>
+            <div class="syntax-meaning">Cover three common config file extensions simultaneously — triple the exposure surface in one query.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('intitle:\"phpmyadmin\" | intitle:\"phpMyAdmin\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">intitle:"phpmyadmin" | intitle:"phpMyAdmin"</div>
+            <div class="syntax-meaning">Handle capitalization variants of phpMyAdmin titles using pipe — catches both naming conventions.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── * wildcard ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(232,121,249,0.2);">
+      <div class="op-card-header" style="background:rgba(232,121,249,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(232,121,249,0.1);border-color:rgba(232,121,249,0.25);font-family:var(--mono);font-size:24px;color:var(--bool-c);">*</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--bool-c);">* &nbsp;(wildcard)</div>
+          <div class="op-target-line">Modifier → Matches any single word within a quoted phrase</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--bool-c);border-color:rgba(232,121,249,0.3);background:rgba(232,121,249,0.07);">Wildcard</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Inside a quoted phrase, the asterisk <code>*</code> acts as a word-level placeholder — it matches any single word in that position. This is useful when you know the pattern but not the exact wording.
+          <br><br>
+          <strong>Important:</strong> The <code>*</code> only works inside quoted strings. Outside quotes it is treated as a regular character. It also matches exactly one word, not multiple words or zero words.
+          <br><br>
+          <strong>Key patterns:</strong> Directory listings (<code>"index of *"</code>), partial error messages (<code>"error * database"</code>), config blocks (<code>"password * admin"</code>).
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns — Pattern Matching</div>
+          <div class="syntax-row" onclick="cp2('intitle:\"index of *\" site:target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">intitle:"index of *" site:target.com</div>
+            <div class="syntax-meaning">Catches all directory listings — "index of /uploads", "index of /backup", "index of /admin" — one dork covers all variants.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('intext:\"error * mysql\" site:target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">intext:"error * mysql" site:target.com</div>
+            <div class="syntax-meaning">Matches any MySQL error message pattern — "error in mysql", "error connecting mysql", etc.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('\"admin * password\" filetype:txt')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">"admin * password" filetype:txt</div>
+            <div class="syntax-meaning">Matches "admin default password", "admin user password", "admin reset password" in plaintext files.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('site:*.target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">site:*.target.com</div>
+            <div class="syntax-meaning">Outside quotes: forces Google to show subdomain results explicitly — wildcard subdomain enumeration pattern.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── .. range ── -->
+    <div class="op-card op-card-simple" style="border-color:rgba(232,121,249,0.2);">
+      <div class="op-card-header" style="background:rgba(232,121,249,0.04);">
+        <div class="op-icon-wrap" style="background:rgba(232,121,249,0.1);border-color:rgba(232,121,249,0.25);font-family:var(--mono);font-size:16px;color:var(--bool-c);">N..M</div>
+        <div class="op-meta">
+          <div class="op-name" style="color:var(--bool-c);">N..M &nbsp;(number range)</div>
+          <div class="op-target-line">Modifier → Matches any number within the specified inclusive range</div>
+        </div>
+        <div class="op-where-badge" style="color:var(--bool-c);border-color:rgba(232,121,249,0.3);background:rgba(232,121,249,0.07);">Range</div>
+      </div>
+      <div class="op-card-body">
+        <p class="op-desc-para">
+          Two dots between two numbers (<code>N..M</code>) define a numeric range. Google will match any value between the lower and upper bound, inclusive. Useful for CVE years, version numbers, prices, and port numbers in exposed service banners.
+          <br><br>
+          <strong>Format:</strong> No spaces around the dots — <code>2020..2024</code> not <code>2020 .. 2024</code>. Can be combined with other operators freely.
+          <br><br>
+          <strong>Security use cases:</strong> Filter vulnerability disclosures by year range, find version-specific software exposures, or narrow hardware recon by model year.
+        </p>
+        <div class="syntax-examples">
+          <div class="examples-label">Usage Patterns — Numeric Targeting</div>
+          <div class="syntax-row" onclick="cp2('CVE 2020..2024 filetype:pdf site:target.com')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">CVE 2020..2024 filetype:pdf site:target.com</div>
+            <div class="syntax-meaning">Finds CVE-referencing PDF documents on the target from years 2020 through 2024 — good for security audit reports.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('intext:\"Apache/2.4\" intitle:\"index of\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">intext:"Apache/2.2..2.4"</div>
+            <div class="syntax-meaning">Find Apache version banners in the 2.2–2.4 range exposed in server error pages or directory listings.</div>
+          </div>
+          <div class="syntax-row" onclick="cp2('site:target.com intext:\"version 1..9\"')" style="cursor:pointer;">
+            <div class="syntax-dork" style="color:var(--bool-c);">site:target.com intext:"version 1..9"</div>
+            <div class="syntax-meaning">Finds pages that display a version number from 1 to 9 — useful for application version fingerprinting.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end op-cards -->
+</section>
+
+<!-- ══════════════════════════════════════════
+     S5 — COMBINING OPERATORS
+══════════════════════════════════════════ -->
+<section class="section" id="s5">
+  <div class="section-head">
+    <div class="sec-num"><span>05</span> — Combining Operators</div>
+    <h2 class="sec-title">The Real Power Is in Chaining</h2>
+    <p class="sec-sub">
+      No single operator is very powerful alone. Effective dorks combine multiple operators to triangulate exactly what you're targeting — each operator constraining a different layer simultaneously.
+    </p>
+  </div>
+
+  <div class="callout callout-tip" style="margin-bottom:28px;">
+    <div class="callout-key">Mental Model for Combining</div>
+    Each operator adds a constraint on a different layer. One constraint = broad. Three constraints = surgical.
+    Think of it like an AND filter: <code>site:</code> (domain) <strong>AND</strong> <code>intitle:</code> (title) <strong>AND</strong> <code>inurl:</code> (path) <strong>AND</strong> <code>filetype:</code> (type) = very specific target.
+  </div>
+
+  <div class="combo-list">
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 01</span>
+        <span class="combo-goal">Find exposed admin login panels on a target domain</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('intitle:\"Admin Login\" inurl:/admin/ site:target.com')">
+          <span style="color:var(--title-c);">intitle:"Admin Login"</span>&nbsp;
+          <span style="color:var(--url-c);">inurl:/admin/</span>&nbsp;
+          <span style="color:var(--site-c);">site:target.com</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--title-c);">intitle:"Admin Login"</div>
+            <div class="cb-meaning">The &lt;title&gt; tag must contain the phrase "Admin Login" — confirms it's an admin page.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--url-c);">inurl:/admin/</div>
+            <div class="cb-meaning">URL must contain /admin/ path — confirms the endpoint structure.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--site-c);">site:target.com</div>
+            <div class="cb-meaning">Restrict all results to target.com only — no other domains.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 02</span>
+        <span class="combo-goal">Find exposed .env files with database credentials</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('filetype:env intext:\"DB_PASSWORD\" intext:\"DB_HOST\"')">
+          <span style="color:var(--file-c);">filetype:env</span>&nbsp;
+          <span style="color:var(--text-c);">intext:"DB_PASSWORD"</span>&nbsp;
+          <span style="color:var(--text-c);">intext:"DB_HOST"</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--file-c);">filetype:env</div>
+            <div class="cb-meaning">Only return .env files — immediately filters to environment config files.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--text-c);">intext:"DB_PASSWORD"</div>
+            <div class="cb-meaning">File must contain the string DB_PASSWORD in its body text.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--text-c);">intext:"DB_HOST"</div>
+            <div class="cb-meaning">Also must contain DB_HOST — together these confirm it's a database configuration file.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 03</span>
+        <span class="combo-goal">Enumerate SQLi-candidate pages on a target</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('site:target.com inurl:\"?id=\" intext:\"Welcome\"')">
+          <span style="color:var(--site-c);">site:target.com</span>&nbsp;
+          <span style="color:var(--url-c);">inurl:"?id="</span>&nbsp;
+          <span style="color:var(--text-c);">intext:"Welcome"</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--site-c);">site:target.com</div>
+            <div class="cb-meaning">Scope limited to target domain only.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--url-c);">inurl:"?id="</div>
+            <div class="cb-meaning">URL contains an integer parameter — common SQLi vector. The id= suggests database query based on user input.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--text-c);">intext:"Welcome"</div>
+            <div class="cb-meaning">Page renders "Welcome" text — suggests it's an authenticated or dynamic page responding to the id parameter.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 04</span>
+        <span class="combo-goal">Find exposed Git repositories</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('intitle:\"index of /.git\" intext:\"HEAD\"')">
+          <span style="color:var(--title-c);">intitle:"index of /.git"</span>&nbsp;
+          <span style="color:var(--text-c);">intext:"HEAD"</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--title-c);">intitle:"index of /.git"</div>
+            <div class="cb-meaning">Title tag shows a directory listing of a .git folder — the repo is publicly browsable.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--text-c);">intext:"HEAD"</div>
+            <div class="cb-meaning">Page body contains "HEAD" — confirms it's a real Git directory with the HEAD ref file visible.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 05</span>
+        <span class="combo-goal">Multi-TLD subdomain recon with noise filtering</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('(site:target.com OR site:target.io OR site:target.net) -www -inurl:blog -inurl:help')">
+          <span style="color:var(--site-c);">(site:target.com OR site:target.io OR site:target.net)</span>&nbsp;
+          <span style="color:var(--bool-c);">-www -inurl:blog -inurl:help</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--site-c);">(site:target.com OR site:target.io OR site:target.net)</div>
+            <div class="cb-meaning">Logical OR across three TLDs in one query — covers the full domain portfolio of a target organization.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--bool-c);">-www -inurl:blog -inurl:help</div>
+            <div class="cb-meaning">Minus exclusions strip the main public-facing pages — what remains are subdomains, dev environments, and internal tools.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 06</span>
+        <span class="combo-goal">Exposed config files — multiple extensions in one query</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('(filetype:env OR filetype:yml OR filetype:conf) intext:\"password\" -site:github.com -site:stackoverflow.com')">
+          <span style="color:var(--file-c);">(filetype:env OR filetype:yml OR filetype:conf)</span>&nbsp;
+          <span style="color:var(--text-c);">intext:"password"</span>&nbsp;
+          <span style="color:var(--bool-c);">-site:github.com -site:stackoverflow.com</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--file-c);">(filetype:env OR filetype:yml OR filetype:conf)</div>
+            <div class="cb-meaning">Covers three config file types simultaneously — environment, YAML, and generic conf files.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--text-c);">intext:"password"</div>
+            <div class="cb-meaning">The word "password" must appear in the file body — filters to credential-bearing config files.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--bool-c);">-site:github.com -site:stackoverflow.com</div>
+            <div class="cb-meaning">Excludes the two largest sources of noisy false positives — code repos and Q&amp;A sites with example configs.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 07</span>
+        <span class="combo-goal">Wildcard directory enumeration — all folder names</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('intitle:\"index of *\" site:target.com -inurl:wordpress -inurl:wp-content')">
+          <span style="color:var(--title-c);">intitle:"index of *"</span>&nbsp;
+          <span style="color:var(--site-c);">site:target.com</span>&nbsp;
+          <span style="color:var(--bool-c);">-inurl:wordpress -inurl:wp-content</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--title-c);">intitle:"index of *"</div>
+            <div class="cb-meaning">Wildcard matches any directory listing regardless of folder name — "index of /uploads", "/backup", "/api", "/private", etc.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--site-c);">site:target.com</div>
+            <div class="cb-meaning">Scoped to the target domain — all directory listings across every subdomain.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--bool-c);">-inurl:wordpress -inurl:wp-content</div>
+            <div class="cb-meaning">Filters out WordPress plugin and theme directories — the most common false positive in open directory queries.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-card">
+      <div class="combo-header">
+        <span class="combo-num">Example 08</span>
+        <span class="combo-goal">Private key exposure — exact phrase in any file type</span>
+      </div>
+      <div class="combo-body">
+        <div class="combo-dork" onclick="cp2('\"-----BEGIN RSA PRIVATE KEY-----\" (filetype:pem OR filetype:txt OR filetype:key) -site:github.com')">
+          <span style="color:var(--bool-c);">"-----BEGIN RSA PRIVATE KEY-----"</span>&nbsp;
+          <span style="color:var(--file-c);">(filetype:pem OR filetype:txt OR filetype:key)</span>&nbsp;
+          <span style="color:var(--bool-c);">-site:github.com</span>
+        </div>
+        <div class="combo-breakdown">
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--bool-c);">"-----BEGIN RSA PRIVATE KEY-----"</div>
+            <div class="cb-meaning">Exact PEM header — this precise string only appears in real RSA private key files. Quotes ensure exact matching.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--file-c);">(filetype:pem OR filetype:txt OR filetype:key)</div>
+            <div class="cb-meaning">Covers three extensions private keys are commonly saved as — ensures we don't miss any.</div>
+          </div>
+          <div class="cb-row">
+            <div class="cb-op" style="color:var(--bool-c);">-site:github.com</div>
+            <div class="cb-meaning">Excludes GitHub — the single largest source of noisy test/example private keys that dilute real findings.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S6 — QUICK REFERENCE TABLE
+══════════════════════════════════════════ -->
+<section class="section" id="s6">
+  <div class="section-head">
+    <div class="sec-num"><span>06</span> — Quick Reference</div>
+    <h2 class="sec-title">All Operators At a Glance</h2>
+    <p class="sec-sub">Every operator, what it scans, single vs. all behavior, and a clickable example.</p>
+  </div>
+
+  <div class="ref-wrap">
+    <table class="ref">
+      <tr>
+        <th>Operator</th>
+        <th>Category</th>
+        <th>Scans / Action</th>
+        <th>Variant Behavior</th>
+        <th>Example (click to copy)</th>
+      </tr>
+      <!-- ── Category A: Layer Targeting ── -->
+      <tr style="background:rgba(56,189,248,0.03);">
+        <td colspan="5" style="padding:8px 16px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(56,189,248,0.6);border-bottom:1px solid var(--line2);">A — Layer Targeting Operators</td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--title-c);">intitle:</span></td>
+        <td><span class="ref-note">Layer A</span></td>
+        <td><span class="ref-scope">HTML &lt;title&gt; tag (browser tab text)</span></td>
+        <td><span class="ref-note">allintitle: — ALL words must be in title</span></td>
+        <td><span class="ref-example" onclick="cp2('intitle:\"index of\"')" style="color:var(--title-c);">intitle:"index of"</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--url-c);">inurl:</span></td>
+        <td><span class="ref-note">Layer A</span></td>
+        <td><span class="ref-scope">Full URL — path, filename, query params</span></td>
+        <td><span class="ref-note">allinurl: — ALL terms must be in URL</span></td>
+        <td><span class="ref-example" onclick="cp2('inurl:/wp-admin/')" style="color:var(--url-c);">inurl:/wp-admin/</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--text-c);">intext:</span></td>
+        <td><span class="ref-note">Layer A</span></td>
+        <td><span class="ref-scope">Visible page body text content</span></td>
+        <td><span class="ref-note">allintext: — ALL words must be in body</span></td>
+        <td><span class="ref-example" onclick="cp2('intext:\"DB_PASSWORD\"')" style="color:var(--text-c);">intext:"DB_PASSWORD"</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--anchor-c);">inanchor:</span></td>
+        <td><span class="ref-note">Layer A</span></td>
+        <td><span class="ref-scope">Visible hyperlink text (&lt;a&gt; label)</span></td>
+        <td><span class="ref-note">allinanchor: — ALL words must be in anchor text</span></td>
+        <td><span class="ref-example" onclick="cp2('inanchor:\"admin login\"')" style="color:var(--anchor-c);">inanchor:"admin login"</span></td>
+      </tr>
+      <!-- ── Category B: Scope & Type ── -->
+      <tr style="background:rgba(248,113,113,0.03);">
+        <td colspan="5" style="padding:8px 16px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(248,113,113,0.6);border-bottom:1px solid var(--line2);">B — Scope &amp; Type Filters</td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--site-c);">site:</span></td>
+        <td><span class="ref-note">Scope B</span></td>
+        <td><span class="ref-scope">Domain / subdomain restriction</span></td>
+        <td><span class="ref-note">No all- variant. Includes all subdomains unless scoped.</span></td>
+        <td><span class="ref-example" onclick="cp2('site:target.com -www')" style="color:var(--site-c);">site:target.com -www</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--file-c);">filetype:</span></td>
+        <td><span class="ref-note">Type B</span></td>
+        <td><span class="ref-scope">File extension filter (indexes by MIME type)</span></td>
+        <td><span class="ref-note">No all- variant. ext: is an identical alias.</span></td>
+        <td><span class="ref-example" onclick="cp2('filetype:env intext:password')" style="color:var(--file-c);">filetype:env intext:password</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--file-c);">ext:</span></td>
+        <td><span class="ref-note">Type B</span></td>
+        <td><span class="ref-scope">Identical alias for filetype: — same behavior</span></td>
+        <td><span class="ref-note">No all- variant. Prefer filetype: for clarity.</span></td>
+        <td><span class="ref-example" onclick="cp2('ext:sql intext:\"INSERT INTO\"')" style="color:var(--file-c);">ext:sql intext:"INSERT INTO"</span></td>
+      </tr>
+      <!-- ── Category C: Google Meta ── -->
+      <tr style="background:rgba(34,211,238,0.03);">
+        <td colspan="5" style="padding:8px 16px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(34,211,238,0.6);border-bottom:1px solid var(--line2);">C — Google Meta Operators</td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--meta-c);">cache:</span></td>
+        <td><span class="ref-note">Meta C</span></td>
+        <td><span class="ref-scope">Google's cached snapshot of a URL</span></td>
+        <td><span class="ref-note">No all- variant. Returns the last archived version.</span></td>
+        <td><span class="ref-example" onclick="cp2('cache:target.com/admin')" style="color:var(--meta-c);">cache:target.com/admin</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--meta-c);">related:</span></td>
+        <td><span class="ref-note">Meta C</span></td>
+        <td><span class="ref-scope">Sites Google considers topically similar to a domain</span></td>
+        <td><span class="ref-note">No all- variant. Works best on well-known domains.</span></td>
+        <td><span class="ref-example" onclick="cp2('related:target.com')" style="color:var(--meta-c);">related:target.com</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--meta-c);">info:</span></td>
+        <td><span class="ref-note">Meta C</span></td>
+        <td><span class="ref-scope">Google's knowledge summary card about a URL</span></td>
+        <td><span class="ref-note">No all- variant. Pivots to cache/similar/links.</span></td>
+        <td><span class="ref-example" onclick="cp2('info:target.com')" style="color:var(--meta-c);">info:target.com</span></td>
+      </tr>
+      <!-- ── Category D: Boolean & Syntax ── -->
+      <tr style="background:rgba(232,121,249,0.03);">
+        <td colspan="5" style="padding:8px 16px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(232,121,249,0.6);border-bottom:1px solid var(--line2);">D — Boolean &amp; Syntax Modifiers</td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--bool-c);">"phrase"</span></td>
+        <td><span class="ref-note">Syntax D</span></td>
+        <td><span class="ref-scope">Forces exact phrase match — no synonyms or reordering</span></td>
+        <td><span class="ref-note">Works inside any operator. Critical for error strings and keys.</span></td>
+        <td><span class="ref-example" onclick="cp2('\"-----BEGIN RSA PRIVATE KEY-----\"')" style="color:var(--bool-c);">"-----BEGIN RSA PRIVATE KEY-----"</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--bool-c);">-keyword</span></td>
+        <td><span class="ref-note">Syntax D</span></td>
+        <td><span class="ref-scope">Excludes results containing the term or matching the operator</span></td>
+        <td><span class="ref-note">Works with any operator: -inurl: -site: -intitle: -filetype:</span></td>
+        <td><span class="ref-example" onclick="cp2('site:target.com -inurl:blog -inurl:help')" style="color:var(--bool-c);">site:target.com -inurl:blog</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--bool-c);">OR &nbsp;/&nbsp; |</span></td>
+        <td><span class="ref-note">Syntax D</span></td>
+        <td><span class="ref-scope">Logical OR — results match either left or right expression</span></td>
+        <td><span class="ref-note">OR must be uppercase. Pipe | is identical. Use () for grouping.</span></td>
+        <td><span class="ref-example" onclick="cp2('site:gov OR site:mil filetype:xls')" style="color:var(--bool-c);">site:gov OR site:mil filetype:xls</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--bool-c);">* wildcard</span></td>
+        <td><span class="ref-note">Syntax D</span></td>
+        <td><span class="ref-scope">Matches any single word at that position inside a quoted phrase</span></td>
+        <td><span class="ref-note">Only works inside quotes. Matches exactly one word.</span></td>
+        <td><span class="ref-example" onclick="cp2('intitle:\"index of *\" site:target.com')" style="color:var(--bool-c);">intitle:"index of *"</span></td>
+      </tr>
+      <tr>
+        <td><span class="ref-op" style="color:var(--bool-c);">N..M range</span></td>
+        <td><span class="ref-note">Syntax D</span></td>
+        <td><span class="ref-scope">Matches any number between N and M (inclusive)</span></td>
+        <td><span class="ref-note">No spaces around the dots. Use for CVE years, versions, prices.</span></td>
+        <td><span class="ref-example" onclick="cp2('CVE 2020..2024 filetype:pdf')" style="color:var(--bool-c);">CVE 2020..2024 filetype:pdf</span></td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S7 — COMMON MISTAKES
+══════════════════════════════════════════ -->
+<section class="section" id="s7">
+  <div class="section-head">
+    <div class="sec-num"><span>07</span> — Common Mistakes</div>
+    <h2 class="sec-title">What Goes Wrong and Why</h2>
+    <p class="sec-sub">
+      These are the exact mistakes most beginners make. Each one is explained with a wrong/right example so you can immediately see the difference.
+    </p>
+  </div>
+
+  <div class="mistake-list">
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Confusing intitle: with searching the visible h1 heading</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">intitle:admin<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Thinking this searches the &lt;h1&gt; "Admin Panel" visible on the page</span></div>
+          <div class="wr-right">intitle:admin<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">This searches the &lt;title&gt; tag — browser tab text only. Use intext: for visible headings.</span></div>
+        </div>
+        <p class="mistake-explain">The <code>&lt;title&gt;</code> and <code>&lt;h1&gt;</code> are completely different HTML elements. The title lives in <code>&lt;head&gt;</code> and shows in the browser tab. The h1 is a visible heading inside the page body. intitle: only reads the title tag. To search visible headings, use <code>intext:</code>.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Using intitle: when you need inurl:</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">intitle:/wp-admin/<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Trying to find WordPress admin by path — won't work reliably</span></div>
+          <div class="wr-right">inurl:/wp-admin/<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">URL path is what inurl: is for — correct and effective</span></div>
+        </div>
+        <p class="mistake-explain">If you want to find a specific directory or path, use <code>inurl:</code> — that's exactly what it's for. <code>intitle:</code> doesn't read URLs. Use each operator for its designated layer.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Misunderstanding intitle: with multiple words</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">intitle:admin login panel<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Thinking all 3 words must be in the title</span></div>
+          <div class="wr-right">allintitle:admin login panel<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Use allintitle: when you want all words in the title</span></div>
+        </div>
+        <p class="mistake-explain">With <code>intitle:admin login panel</code>, only "admin" is locked to the title. "login" and "panel" are searched anywhere on the page. To force all three into the title, use <code>allintitle:admin login panel</code>.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Confusing inanchor: with inurl: — link text vs. link destination</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">inanchor:/admin/login<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Trying to find pages linking to /admin/login by href</span></div>
+          <div class="wr-right">inurl:/admin/login<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">inurl: searches the URL. inanchor: is for the link's visible label text.</span></div>
+        </div>
+        <p class="mistake-explain"><code>inanchor:</code> reads the text you click on — like "Click here to login". It does not read what URL the link points to. For link destinations, the URL is part of the page's source, not its anchor text — use <code>inurl:</code> for paths.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Forgetting that intext: alone is rarely useful — combine it</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">intext:password<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Returns millions of results — too broad to be useful</span></div>
+          <div class="wr-right">intext:"DB_PASSWORD" filetype:env<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">intext: + filetype: = specific, actionable results</span></div>
+        </div>
+        <p class="mistake-explain">Google already searches body text by default. <code>intext:</code> alone does almost nothing new — it's redundant for simple searches. Its value is in being combined: lock a keyword to the body while using <code>filetype:</code>, <code>inurl:</code>, or <code>site:</code> to narrow the scope.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Writing OR in lowercase — it becomes a search keyword, not an operator</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">site:gov or site:mil filetype:xls<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Lowercase "or" — Google treats it as a search word, ignores it as an operator</span></div>
+          <div class="wr-right">site:gov OR site:mil filetype:xls<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Uppercase OR — Google treats it as a logical operator, returns results from either domain</span></div>
+        </div>
+        <p class="mistake-explain"><code>OR</code> must be fully uppercase. With lowercase "or", Google either ignores it or treats it as a literal search keyword. The pipe <code>|</code> is a reliable alternative that doesn't have capitalization ambiguity: <code>site:gov | site:mil</code>.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Using * outside quotes expecting wildcard subdomain or path matching</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">intitle:index of * backup<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Wildcard outside quotes — doesn't work as intended. * is literal outside quotes.</span></div>
+          <div class="wr-right">intitle:"index of * backup"<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Wildcard inside quotes — * matches any single word in that position within the phrase</span></div>
+        </div>
+        <p class="mistake-explain">The <code>*</code> wildcard only works as a word placeholder inside double-quoted phrases. Outside quotes, it is treated as a literal asterisk. Additionally, <code>*</code> inside quotes matches exactly one word — not zero words or multiple words. <code>"index of * backup"</code> works; <code>intitle:index of * backup</code> does not.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Forgetting quotes on filetype: ext: values with special characters</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">filetype:env intext:DB_PASSWORD=<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">The = at the end may be misinterpreted — inconsistent behavior</span></div>
+          <div class="wr-right">filetype:env intext:"DB_PASSWORD="<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Quoted phrase including the = ensures exact assignment pattern match</span></div>
+        </div>
+        <p class="mistake-explain">Config key patterns like <code>DB_PASSWORD=</code>, <code>SECRET_KEY=</code>, and <code>PRIVATE_KEY=</code> should always be quoted. The <code>=</code> character has special meaning in some query contexts. Quoting the whole pattern also ensures you're finding the variable assignment form, not just any page that mentions the keyword anywhere.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Using filetype: and ext: on the same query expecting stricter filtering</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">filetype:env ext:env intext:password<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Thinking two operator variants = stricter filtering — they're identical</span></div>
+          <div class="wr-right">filetype:env intext:password<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">One is enough — ext: and filetype: return the same results</span></div>
+        </div>
+        <p class="mistake-explain"><code>filetype:</code> and <code>ext:</code> are exact aliases — they are processed identically by Google. Using both in one query does not add any additional restriction. Pick one and use it consistently. Use <code>OR</code> with both only if you're trying to cover two different file types: <code>filetype:env OR filetype:conf</code>.</p>
+      </div>
+    </div>
+
+    <div class="mistake-card">
+      <div class="mistake-header">
+        <div class="mistake-icon">⚠</div>
+        <div class="mistake-title">Placing - (minus) with a space before the keyword — it won't exclude</div>
+      </div>
+      <div class="mistake-body">
+        <div class="wrong-right">
+          <div class="wr-wrong">site:target.com - inurl:blog<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">Space between - and the operator — "- inurl:blog" becomes a literal minus sign in the query</span></div>
+          <div class="wr-right">site:target.com -inurl:blog<br><span style="color:var(--text3);font-size:10px;margin-top:4px;display:block;font-weight:400;">No space — the minus must immediately precede the operator or keyword</span></div>
+        </div>
+        <p class="mistake-explain">The exclusion minus <code>-</code> must be written with no space before the term. <code>-inurl:blog</code> excludes results with "blog" in the URL. <code>- inurl:blog</code> (with a space) is parsed as a regular hyphen and ignored as an exclusion operator. This is one of the most common reasons exclusions silently fail.</p>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- Footer -->
+<div class="page-footer">
+  Google Dork Operator Anatomy &nbsp;·&nbsp; For Authorized Security Research Only &nbsp;·&nbsp; eJPT / OSCP Prep
+</div>
+
+</div><!-- end .page -->
+
+<script>
+// ── Nav active state on scroll ──
+(function() {
+  var nav = document.getElementById('nav');
+  var links = nav.querySelectorAll('a[data-t]');
+  var sections = document.querySelectorAll('section.section[id]');
+  var NAV_H = nav.offsetHeight;
+
+  function setActive() {
+    var scrollY = window.pageYOffset + NAV_H + 32;
+    var cur = '';
+    sections.forEach(function(sec) {
+      if (sec.offsetTop <= scrollY) cur = sec.id;
+    });
+    links.forEach(function(a) {
+      if (a.getAttribute('data-t') === cur) {
+        a.classList.add('active');
+        var left = a.offsetLeft;
+        var nw   = nav.offsetWidth;
+        var lw   = a.offsetWidth;
+        if (left < nav.scrollLeft || left + lw > nav.scrollLeft + nw)
+          nav.scrollLeft = left - nw / 2 + lw / 2;
+      } else {
+        a.classList.remove('active');
+      }
+    });
+  }
+
+  links.forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.getElementById(this.getAttribute('data-t'));
+      if (!target) return;
+      var y = target.getBoundingClientRect().top + window.pageYOffset - NAV_H - 18;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+  });
+
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+})();
+
+// ── Toast ──
+var toastTimer;
+function showToast() {
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1600);
+}
+
+// ── Copy with data-v attribute ──
+function cp(el) {
+  var val = el.getAttribute('data-v') || (el.innerText || el.textContent).trim();
+  if (navigator.clipboard) navigator.clipboard.writeText(val).then(showToast);
+}
+
+// ── Copy with direct string ──
+function cp2(str) {
+  if (navigator.clipboard) navigator.clipboard.writeText(str).then(showToast);
+}
+
+// Clicking ref-example or sva-dork without data-v
+document.querySelectorAll('.ref-example, .example-dork-text').forEach(function(el) {
+  el.addEventListener('click', function() {
+    var txt = (this.innerText || this.textContent).trim();
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(showToast);
+  });
+});
+</script>
+</body>
+</html>
