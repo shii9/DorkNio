@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "DorkNio — Google Dorking Query Builder",
+  "short_name": "DorkNio",
+  "version": "1.0.0",
+  "description": "Professional Google Dorking Query Builder and Recon Assistant for security researchers, bug bounty hunters, and OSINT analysts.",
+  "icons": {
+    "16":  "favicon.svg",
+    "48":  "favicon.svg",
+    "128": "favicon.svg"
+  },
+  "action": {
+    "default_title": "Open DorkNio",
+    "default_icon": {
+      "16":  "favicon.svg",
+      "48":  "favicon.svg",
+      "128": "favicon.svg"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "tabs"
+  ],
+  "host_permissions": []
+}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090B" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Primary SEO Metadata -->
+  <title>DorkNio - Advanced Google Dorking Tools</title>
+  <meta name="description"
+    content="Build, customize, and execute advanced Google Dorks for cybersecurity reconnaissance, penetration testing, OSINT investigation, and bug bounty hunting. Secure and lightning-fast." />
+  <meta name="keywords"
+    content="google dorking tool, google dorks, reconnaissance suite, cybersecurity reconnaissance, penetration testing tools, OSINT tools, bug bounty builder, vulnerability scanner" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="DorkNio Dev Team" />
+  <link rel="canonical" href="https://dorknio.com/" />
+
+  <!-- Open Graph / Facebook Social SEO -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://dorknio.com/" />
+  <meta property="og:title" content="DorkNio - Elite Google Dorking & Cyber Recon Suite" />
+  <meta property="og:description"
+    content="Synthesize, customize, and execute highly targeted Google Dork queries for advanced penetration testing, bug bounty hunting, and cybersecurity reconnaissance." />
+  <meta property="og:image" content="https://dorknio.com/og-preview.png" />
+  <meta property="og:site_name" content="DorkNio" />
+
+  <!-- Twitter Social SEO -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://dorknio.com/" />
+  <meta name="twitter:title" content="DorkNio - Elite Google Dorking & Cyber Recon Suite" />
+  <meta name="twitter:description"
+    content="Synthesize, customize, and execute highly targeted Google Dork queries for advanced penetration testing, bug bounty hunting, and cybersecurity reconnaissance." />
+  <meta name="twitter:image" content="https://dorknio.com/og-preview.png" />
+  <style>
+    .no-transition * {
+      transition: none !important;
+    }
+  </style>
+  <script>
+    (function () {
+      document.documentElement.classList.add('no-transition');
+      const savedAccent = localStorage.getItem('dorknio_accent') || 'cyan';
+      const savedMode = localStorage.getItem('dorknio_mode') || 'dark';
+      if (savedMode === 'light') document.documentElement.classList.add('light');
+      const ACCENTS = [
+        { id: 'cyan', color: '#17a2b8', bg: 'rgba(23,162,184,0.12)', glow: 'rgba(23,162,184,0.45)', tint: '#080c0d', s1: '#0c1214' },
+        { id: 'blue', color: '#4a7cf2', bg: 'rgba(74,124,242,0.12)', glow: 'rgba(74,124,242,0.45)', tint: '#08090d', s1: '#0c0e14' },
+        { id: 'purple', color: '#8a6df2', bg: 'rgba(138,109,242,0.12)', glow: 'rgba(138,109,242,0.45)', tint: '#0a080d', s1: '#100c14' },
+        { id: 'emerald', color: '#2ab88b', bg: 'rgba(42,184,139,0.12)', glow: 'rgba(42,184,139,0.45)', tint: '#080d09', s1: '#0c140e' },
+        { id: 'rose', color: '#d84b65', bg: 'rgba(216,75,101,0.12)', glow: 'rgba(216,75,101,0.45)', tint: '#0d0808', s1: '#140c0c' },
+      ];
+      const acc = ACCENTS.find(a => a.id === savedAccent) || ACCENTS[0];
+      const root = document.documentElement;
+      root.style.setProperty('--accent-primary', acc.color);
+      root.style.setProperty('--accent-primary-bg', acc.bg);
+      root.style.setProperty('--accent-primary-glow', acc.glow || acc.bg);
+      root.style.setProperty('--theme-tint', acc.tint);
+      root.style.setProperty('--theme-s1', acc.s1);
+
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          document.documentElement.classList.remove('no-transition');
+        }, 100);
+      });
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

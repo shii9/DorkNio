@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Dorking — Complete Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #0f1318;
+    --surface2: #141a22;
+    --border: #1e2a38;
+    --accent: #00e5ff;
+    --accent2: #ff3e6c;
+    --accent3: #a0ff6e;
+    --accent4: #ffc107;
+    --text: #c9d6e3;
+    --muted: #5a7a95;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --nav-h: 46px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: auto; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  /* HEADER */
+  header {
+    position: relative;
+    padding: 72px 48px 56px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,229,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,62,108,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; letter-spacing: -1px; line-height: 1.1; color: #fff; margin-bottom: 16px; }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 15px; max-width: 580px; }
+
+  /* STICKY NAV */
+  #main-nav {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    height: var(--nav-h);
+    background: rgba(10,12,15,0.97);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #main-nav::-webkit-scrollbar { display: none; }
+  #main-nav a {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 11px;
+    white-space: nowrap;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.18s, border-color 0.18s, background 0.18s;
+    cursor: pointer;
+  }
+  #main-nav a:hover { color: var(--accent); }
+  #main-nav a.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.08);
+  }
+
+  /* LAYOUT */
+  main { max-width: 1100px; margin: 0 auto; padding: 0 48px 80px; }
+
+  /* SECTIONS */
+  section { padding: 60px 0 36px; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+  section[id] { scroll-margin-top: calc(var(--nav-h) + 14px); }
+
+  .sec-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h2 { font-size: 1.85rem; font-weight: 800; color: #fff; margin-bottom: 20px; letter-spacing: -0.5px; }
+  h3 {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 34px 0 14px;
+    font-family: var(--mono);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  p { color: var(--text); margin-bottom: 14px; }
+  strong { color: #fff; }
+
+  /* DORK BOX */
+  .dork {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 13px 18px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin: 10px 0 16px;
+    word-break: break-all;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .dork:hover { background: var(--surface2); }
+  .dork::after {
+    content: 'COPY';
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .dork:hover::after { opacity: 1; }
+  .dork .comment { display: block; color: var(--muted); font-size: 11px; margin-top: 6px; font-style: italic; }
+  .dork-danger { border-left-color: var(--accent2) !important; color: var(--accent2) !important; }
+  .dork-warn   { border-left-color: var(--accent4) !important; color: var(--accent4) !important; }
+  .dork-safe   { border-left-color: var(--accent3) !important; color: var(--accent3) !important; }
+  .dork.copied { outline: 1px solid var(--accent3); }
+
+  /* OPERATOR GRID */
+  .op-grid { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin: 20px 0; }
+  .op-row { display: grid; grid-template-columns: 190px 1fr; border-bottom: 1px solid var(--border); transition: background 0.12s; }
+  .op-row:last-child { border-bottom: none; }
+  .op-row:hover { background: var(--surface2); }
+  .op-key {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--accent3);
+    background: var(--surface);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--border);
+    word-break: break-word;
+  }
+  .op-val { padding: 12px 16px; font-size: 13px; color: var(--text); }
+
+  /* CARDS */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin: 20px 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card-title { font-family: var(--mono); font-size: 11px; color: var(--accent4); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .card p { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+
+  /* ALERT BOXES */
+  .warning {
+    background: rgba(255,62,108,0.06);
+    border: 1px solid rgba(255,62,108,0.3);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .warning strong { color: var(--accent2); font-family: var(--mono); }
+  .info-box {
+    background: rgba(0,229,255,0.05);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .info-box strong { color: var(--accent); font-family: var(--mono); }
+
+  /* TABLES */
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; border-radius: 6px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface); }
+  td:first-child { font-family: var(--mono); color: var(--accent3); font-size: 12px; }
+  .risk-r { color: var(--accent2); font-weight: 700; }
+  .risk-o { color: var(--accent4); font-weight: 700; }
+
+  /* INLINE CODE */
+  mark {
+    background: rgba(0,229,255,0.12);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 0.88em;
+  }
+
+  /* PHASE BLOCKS */
+  .phase { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; margin: 14px 0; }
+  .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .phase-num {
+    width: 30px; height: 30px;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .phase-title { font-weight: 700; color: #fff; font-size: 14px; }
+
+  /* FOOTER */
+  footer { text-align: center; padding: 28px; color: var(--muted); font-family: var(--mono); font-size: 11px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 700px) {
+    header, main { padding-left: 18px; padding-right: 18px; }
+    #main-nav { padding: 0 14px; }
+    .op-row { grid-template-columns: 1fr; }
+    .op-key { border-right: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--accent4); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">OSINT · Reconnaissance · Security Research</div>
+  <h1>Google <span>Dorking</span></h1>
+  <p class="subtitle">A complete technical reference for advanced search operators, OSINT reconnaissance techniques, and defensive awareness — built for ethical security research and eJPT / OSCP exam prep.</p>
+</header>
+
+<nav id="main-nav">
+  <a data-target="what">What is it?</a>
+  <a data-target="operators">Core Operators</a>
+  <a data-target="advanced">Advanced Operators</a>
+  <a data-target="combining">Combining</a>
+  <a data-target="usecases">Use Cases</a>
+  <a data-target="filetype">Filetypes</a>
+  <a data-target="recon">Recon Workflow</a>
+  <a data-target="defense">Defense</a>
+  <a data-target="cheatsheet">Cheat Sheet</a>
+  <a data-target="ghdb">GHDB</a>
+</nav>
+
+<main>
+
+<!-- 01 WHAT -->
+<section id="what">
+  <div class="sec-label">01 — Introduction</div>
+  <h2>What is Google Dorking?</h2>
+  <p>Google Dorking (also called <strong>Google Hacking</strong>) is the practice of using advanced Google search operators to uncover specific — often sensitive — information that has been inadvertently indexed by Google's web crawler. The technique was popularized by security researcher <strong>Johnny Long</strong>, who compiled thousands of effective queries into the <em>Google Hacking Database (GHDB)</em> starting in the early 2000s.</p>
+  <p>Google's crawler continuously indexes the public web — including misconfigured servers, exposed directories, leaked credentials, unprotected admin panels, and sensitive documents that were never meant to be publicly accessible. Google Dorking is the art of querying that index with precision.</p>
+
+  <div class="info-box">
+    <strong>KEY INSIGHT:</strong> Google Dorking does not "hack" anything directly. It leverages Google's existing index to surface information that is technically public but accidentally exposed. No target systems are touched — all queries run against Google's own database.
+  </div>
+
+  <div class="warning">
+    <strong>⚠ LEGAL WARNING:</strong> Running Google Dorks against targets without explicit written authorization may violate the Computer Fraud and Abuse Act (CFAA), GDPR, or local cybercrime laws. This guide is strictly for authorized security testing, bug bounty programs, defensive awareness, and academic study.
+  </div>
+
+  <h3>Why It Matters for Pentesters</h3>
+  <p>In a real penetration test — and on eJPT / OSCP exams — the reconnaissance phase relies heavily on OSINT. Google Dorking can reveal attack surface, sensitive data, technology stack details, and vulnerable files, all without touching the target.</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-title">Attack Surface</div><p>Exposed login pages, admin panels, VPN portals, and remote access interfaces that expand entry points.</p></div>
+    <div class="card"><div class="card-title">Sensitive Data</div><p>Leaked credentials, API keys, database dumps, .env files, and config files left in the open.</p></div>
+    <div class="card"><div class="card-title">Technology Stack</div><p>Server versions, CMS platforms, frameworks — cross-reference with CVEs for known exploits.</p></div>
+    <div class="card"><div class="card-title">Vulnerable Files</div><p>Open directory listings, exposed .git folders, unprotected .env files, and backup files.</p></div>
+    <div class="card"><div class="card-title">Third-Party Leaks</div><p>Credentials leaked on GitHub, Pastebin, Trello, or code-sharing sites referencing your target.</p></div>
+    <div class="card"><div class="card-title">Zero Infrastructure Touch</div><p>100% passive — no packets sent to target. Perfect for the passive recon phase of any engagement.</p></div>
+  </div>
+</section>
+
+<!-- 02 CORE OPERATORS -->
+<section id="operators">
+  <div class="sec-label">02 — Core Operators</div>
+  <h2>Core Search Operators</h2>
+  <p>These are the fundamental building blocks of every Google Dork. Each operator tells Google exactly <em>where</em> to look for your keyword — in the URL, title, body, domain, or file type. Master these before combining them.</p>
+
+  <div class="op-grid">
+    <div class="op-row"><div class="op-key">site:</div><div class="op-val">Restricts all results to a specific domain or subdomain. The most-used operator in pentest recon. Does not search sub-paths unless combined with other operators.</div></div>
+    <div class="op-row"><div class="op-key">intitle:</div><div class="op-val">Finds pages where the HTML &lt;title&gt; tag contains the specified keyword. Useful for finding admin panels, login pages, and error pages.</div></div>
+    <div class="op-row"><div class="op-key">allintitle:</div><div class="op-val">All specified words must appear in the page title. More restrictive than multiple intitle: calls.</div></div>
+    <div class="op-row"><div class="op-key">inurl:</div><div class="op-val">Finds pages where the URL contains the specified string. Great for finding specific paths, parameters, or scripts.</div></div>
+    <div class="op-row"><div class="op-key">allinurl:</div><div class="op-val">All specified words must appear in the URL. Narrows results further than multiple inurl: calls.</div></div>
+    <div class="op-row"><div class="op-key">intext:</div><div class="op-val">Finds pages where the visible body content contains the specified keyword. Useful for error messages, passwords in page content, and leaked data.</div></div>
+    <div class="op-row"><div class="op-key">allintext:</div><div class="op-val">All specified words must appear in the body content. More targeted than multiple intext: operators.</div></div>
+    <div class="op-row"><div class="op-key">filetype:</div><div class="op-val">Finds indexed files of a specific type — pdf, xls, xlsx, docx, txt, log, sql, env, conf, bak, pem, and more.</div></div>
+    <div class="op-row"><div class="op-key">ext:</div><div class="op-val">Exact alias for filetype: — both work identically. Finds files by extension.</div></div>
+    <div class="op-row"><div class="op-key">cache:</div><div class="op-val">Shows Google's cached (snapshot) version of a URL. Useful when the original page has been taken down or modified since indexing.</div></div>
+    <div class="op-row"><div class="op-key">related:</div><div class="op-val">Finds websites topically similar to a given URL. Useful for competitor/infrastructure mapping.</div></div>
+    <div class="op-row"><div class="op-key">info:</div><div class="op-val">Shows Google's info summary about a specific URL — cached version, similar pages, linking pages.</div></div>
+    <div class="op-row"><div class="op-key">"exact phrase"</div><div class="op-val">Quotation marks force an exact phrase match. Critical for finding specific error strings, credential patterns, and configuration snippets.</div></div>
+    <div class="op-row"><div class="op-key">-keyword</div><div class="op-val">Minus sign excludes results containing a keyword. Essential for filtering noise from broad queries.</div></div>
+    <div class="op-row"><div class="op-key">OR &nbsp;/&nbsp; |</div><div class="op-val">Logical OR — returns results matching either term. Example: <mark>site:gov OR site:mil</mark></div></div>
+    <div class="op-row"><div class="op-key">* (wildcard)</div><div class="op-val">Matches any word in a phrase. Example: <mark>"index of *"</mark> matches any directory listing.</div></div>
+    <div class="op-row"><div class="op-key">.. (range)</div><div class="op-val">Number range operator. Example: <mark>camera $200..$500</mark> finds cameras in that price range.</div></div>
+  </div>
+
+  <h3>Basic Operator Examples</h3>
+  <p><strong>Enumerate all indexed pages of a target:</strong></p>
+  <div class="dork dork-safe">site:example.com<span class="comment">// Shows everything Google has indexed from this domain — your baseline</span></div>
+
+  <p><strong>Discover subdomains (passive):</strong></p>
+  <div class="dork dork-safe">site:*.example.com -www<span class="comment">// Wildcard subdomain enumeration — exclude www to surface forgotten assets</span></div>
+
+  <p><strong>Find admin/login pages by title:</strong></p>
+  <div class="dork">intitle:"admin login" site:example.com<span class="comment">// Pages whose HTML title contains "admin login" on the target domain</span></div>
+
+  <p><strong>Find URL paths containing "admin":</strong></p>
+  <div class="dork">inurl:admin site:example.com<span class="comment">// Any URL under example.com containing /admin/</span></div>
+
+  <p><strong>Exact string in page body:</strong></p>
+  <div class="dork">intext:"Index of /" site:example.com<span class="comment">// Body contains that exact string — classic open directory indicator</span></div>
+
+  <p><strong>Find a specific file type:</strong></p>
+  <div class="dork">filetype:pdf site:example.com<span class="comment">// All PDF files indexed from example.com</span></div>
+
+  <p><strong>Exclude noise with minus:</strong></p>
+  <div class="dork dork-safe">site:example.com -inurl:blog -inurl:news<span class="comment">// Show all pages except blog and news sections</span></div>
+</section>
+
+<!-- 03 ADVANCED -->
+<section id="advanced">
+  <div class="sec-label">03 — Advanced Operators</div>
+  <h2>Advanced Operator Techniques</h2>
+  <p>These patterns go beyond simple lookups, targeting specific structural indicators that signal misconfiguration, version leakage, or exposed infrastructure.</p>
+
+  <h3>INURL — URL Pattern Hunting</h3>
+  <div class="dork">inurl:/wp-admin/ site:example.com<span class="comment">// WordPress admin panel — brute-force candidate if found exposed</span></div>
+  <div class="dork">inurl:"/phpMyAdmin/" intitle:"phpMyAdmin"<span class="comment">// Exposed phpMyAdmin database management interfaces</span></div>
+  <div class="dork">inurl:":8080" OR inurl:":8443" site:example.com<span class="comment">// Non-standard ports — frequently dev/test servers with weaker auth</span></div>
+  <div class="dork">inurl:"/cgi-bin/" site:example.com<span class="comment">// CGI script directories — historically Shellshock-vulnerable</span></div>
+  <div class="dork">inurl:".php?id=" site:example.com<span class="comment">// Pages with ?id= parameter — prime SQLi injection test targets</span></div>
+  <div class="dork">inurl:"/api/v1/" OR inurl:"/api/v2/" site:example.com<span class="comment">// API versioned endpoints — check for unauthenticated access</span></div>
+
+  <h3>INTITLE — Page Title Patterns</h3>
+  <div class="dork">intitle:"index of" "parent directory"<span class="comment">// Classic open/exposed directory listing on misconfigured web servers</span></div>
+  <div class="dork">intitle:"Dashboard" inurl:"/dashboard" site:example.com<span class="comment">// Application dashboards — may be accessible without authentication</span></div>
+  <div class="dork">intitle:"Cisco System" inurl:"/exec/show"<span class="comment">// Exposed Cisco router management — can show running config</span></div>
+  <div class="dork">intitle:"Network Camera" inurl:"/view.shtml"<span class="comment">// IP cameras with publicly accessible live streams</span></div>
+  <div class="dork">intitle:"Apache Tomcat" "Error report"<span class="comment">// Tomcat error pages leaking version, OS, and file path information</span></div>
+  <div class="dork">intitle:"Welcome to nginx"<span class="comment">// Nginx default install pages — server may be misconfigured or abandoned</span></div>
+  <div class="dork">intitle:"Laravel" intext:"APP_DEBUG=true"<span class="comment">// Laravel apps with debug mode ON — full stack trace exposed to public</span></div>
+
+  <h3>INTEXT — Body Content Patterns</h3>
+  <div class="dork dork-warn">intext:"sql syntax near" OR intext:"syntax error has occurred" OR intext:"mysql_fetch"<span class="comment">// Raw SQL error messages — strong indicator of SQLi vulnerability</span></div>
+  <div class="dork dork-warn">intext:"Warning: mysql_connect()" intext:"on line" site:example.com<span class="comment">// PHP MySQL connection errors leaking DB hostname and credentials path</span></div>
+  <div class="dork dork-warn">intext:"ORA-01756" OR intext:"ORA-00942"<span class="comment">// Oracle database error codes leaking schema information</span></div>
+  <div class="dork">intext:"Traceback (most recent call last)" site:example.com<span class="comment">// Python/Django uncaught exceptions leaking file paths and code</span></div>
+  <div class="dork">intext:"powered by" intext:"phpBB" site:example.com<span class="comment">// Technology fingerprinting via footer attribution</span></div>
+
+  <h3>CACHE — Accessing Removed Content</h3>
+  <div class="dork">cache:example.com/admin/config<span class="comment">// View Google's cached snapshot of a page that may now be deleted/secured</span></div>
+  <div class="dork">cache:example.com/backup.sql<span class="comment">// Access a cached version of a database file that was briefly exposed</span></div>
+</section>
+
+<!-- 04 COMBINING -->
+<section id="combining">
+  <div class="sec-label">04 — Combining Operators</div>
+  <h2>Combining Operators — Power Dorks</h2>
+  <p>Single-operator dorks are broad. The real precision comes from chaining multiple operators together. Each additional constraint narrows results, surfacing highly specific exposed resources.</p>
+
+  <div class="info-box">
+    <strong>SYNTAX RULE:</strong> Operators are separated by spaces. No comma, no semicolon. Chain as many as needed on one line:<br><mark>site:example.com filetype:sql intitle:"backup" intext:"password"</mark>
+  </div>
+
+  <h3>Exposed Credentials &amp; Secrets</h3>
+  <div class="dork dork-danger">site:example.com filetype:env "DB_PASSWORD"<span class="comment">// .env files containing database credentials — critical severity</span></div>
+  <div class="dork dork-danger">site:example.com filetype:log intext:"password"<span class="comment">// Application log files containing plaintext passwords</span></div>
+  <div class="dork dork-danger">site:example.com filetype:yml intext:"password:"<span class="comment">// YAML config files (Docker Compose, CI/CD) with hardcoded passwords</span></div>
+  <div class="dork dork-danger">site:example.com inurl:"config" filetype:php intext:"password"<span class="comment">// PHP config files containing credential variables</span></div>
+  <div class="dork dork-danger">site:pastebin.com "example.com" "password"<span class="comment">// Leaked credentials pasted on Pastebin referencing the target domain</span></div>
+  <div class="dork dork-danger">filetype:sql intext:"INSERT INTO" intext:"password"<span class="comment">// SQL dumps containing user tables with password hashes or plaintext</span></div>
+
+  <h3>Exposed Git Repositories</h3>
+  <div class="dork dork-danger">inurl:/.git/ intitle:"Index of /.git"<span class="comment">// Exposed .git directory — entire source code + commit history + secrets accessible</span></div>
+  <div class="dork dork-danger">inurl:"/.git/config" site:example.com<span class="comment">// Git config file — reveals remote URL, branches, and sometimes credentials</span></div>
+
+  <h3>Open Directory Listings</h3>
+  <div class="dork">intitle:"index of" "backup" site:example.com<span class="comment">// Backup files sitting in open web-accessible directories</span></div>
+  <div class="dork">intitle:"index of" ".sql" OR ".db" site:example.com<span class="comment">// Raw database files in browseable directories</span></div>
+  <div class="dork">intitle:"index of" "config" site:example.com<span class="comment">// Configuration files in open directories</span></div>
+  <div class="dork">intitle:"index of" ".bak" OR ".old" site:example.com<span class="comment">// Backup versions of files — may contain old unpatched code</span></div>
+  <div class="dork">intitle:"index of" "/uploads/" site:example.com<span class="comment">// Unprotected file upload directories — check for webshells</span></div>
+
+  <h3>Admin &amp; Login Panels</h3>
+  <div class="dork">site:example.com inurl:admin intitle:"login"<span class="comment">// Admin login portals on the target domain</span></div>
+  <div class="dork">site:example.com inurl:"/wp-login.php"<span class="comment">// WordPress login pages — test for default/weak credentials</span></div>
+  <div class="dork">site:example.com inurl:"/administrator/index.php"<span class="comment">// Joomla CMS administrator login</span></div>
+  <div class="dork">site:example.com intitle:"Webmin" inurl:":10000"<span class="comment">// Webmin server admin interface on default port 10000</span></div>
+  <div class="dork">site:example.com inurl:"/panel/" OR inurl:"/cpanel/" intitle:"login"<span class="comment">// Control panels and hosting management interfaces</span></div>
+
+  <h3>Network Devices &amp; IoT</h3>
+  <div class="dork">intitle:"RouterOS" inurl:"/winbox/"<span class="comment">// MikroTik routers with exposed WinBox web interface</span></div>
+  <div class="dork">intitle:"AXIS" inurl:"/mjpg/video.mjpg"<span class="comment">// Axis network camera live MJPEG streams — publicly viewable</span></div>
+  <div class="dork">intitle:"D-Link" inurl:"/login.cgi"<span class="comment">// D-Link router admin login pages</span></div>
+  <div class="dork">intitle:"Hikvision" inurl:"/doc/page/login.asp"<span class="comment">// Hikvision IP security camera admin panels</span></div>
+
+  <h3>Error Messages &amp; Version Leaks</h3>
+  <div class="dork dork-warn">site:example.com intext:"fatal error" OR intext:"stack trace" OR intext:"Traceback"<span class="comment">// Application exceptions leaking file paths, code, and infrastructure info</span></div>
+  <div class="dork dork-warn">site:example.com intitle:"Apache/2" "Server at"<span class="comment">// Apache default pages showing exact server version and OS details</span></div>
+  <div class="dork dork-warn">site:example.com intext:"PHP Version" intitle:"phpinfo()"<span class="comment">// Exposed phpinfo() pages — full PHP config, loaded modules, environment vars</span></div>
+</section>
+
+<!-- 05 USE CASES -->
+<section id="usecases">
+  <div class="sec-label">05 — Use Cases</div>
+  <h2>Real-World Use Cases</h2>
+
+  <h3>Bug Bounty Reconnaissance</h3>
+  <div class="dork dork-safe">site:*.example.com -www -mail -shop -blog<span class="comment">// Discover forgotten subdomains — staging, dev, old apps — highest-value bug bounty targets</span></div>
+  <div class="dork dork-safe">site:example.com filetype:pdf OR filetype:docx OR filetype:xlsx -inurl:public<span class="comment">// Internal documents inadvertently indexed — org charts, internal pricing, GDPR data</span></div>
+  <div class="dork dork-safe">site:example.com inurl:api OR inurl:"/v1/" OR inurl:"/v2/"<span class="comment">// Find API endpoints — test for broken object level authorization (BOLA/IDOR)</span></div>
+  <div class="dork dork-safe">site:example.com inurl:swagger OR inurl:api-docs OR inurl:openapi<span class="comment">// Exposed Swagger / OpenAPI documentation — complete API blueprint</span></div>
+  <div class="dork dork-safe">site:example.com inurl:".git" OR inurl:".svn" OR inurl:".hg"<span class="comment">// Source control directories — exposed VCS metadata and full source code</span></div>
+
+  <h3>Credential &amp; Secret Hunting (OSINT)</h3>
+  <div class="dork dork-danger">site:github.com "example.com" "password" OR "secret" OR "api_key" OR "token"<span class="comment">// Leaked credentials in public GitHub repos — search by target domain</span></div>
+  <div class="dork dork-danger">site:github.com filename:.env "DB_HOST" OR "AWS_SECRET"<span class="comment">// .env files accidentally committed to public GitHub repositories</span></div>
+  <div class="dork dork-danger">site:github.com filename:config.php "password" OR "db_pass"<span class="comment">// PHP config files with hardcoded database credentials on GitHub</span></div>
+  <div class="dork dork-danger">site:trello.com "example.com" "password"<span class="comment">// Credentials stored in public Trello boards by developers</span></div>
+  <div class="dork dork-danger">site:gitlab.com "example.com" "private_token"<span class="comment">// GitLab repos leaking API tokens for the target</span></div>
+
+  <h3>CMS &amp; Technology Fingerprinting</h3>
+  <div class="dork">site:example.com inurl:"/wp-content/" OR inurl:"/wp-includes/"<span class="comment">// WordPress detection — then enumerate plugins/themes for CVEs</span></div>
+  <div class="dork">site:example.com inurl:"/sites/default/files/" OR "Powered by Drupal"<span class="comment">// Drupal CMS — check version for unpatched SA advisories</span></div>
+  <div class="dork">site:example.com intitle:"Grafana" inurl:"/login"<span class="comment">// Grafana monitoring — check for CVE-2021-43798 path traversal</span></div>
+  <div class="dork">site:example.com intitle:"Kibana" inurl:":5601"<span class="comment">// Kibana (Elasticsearch) on default port — often no auth in older versions</span></div>
+
+  <h3>Vulnerable Parameter Discovery</h3>
+  <div class="dork">site:example.com inurl:"?page=" OR inurl:"?id=" OR inurl:"?cat=" OR inurl:"?pid="<span class="comment">// Common integer GET params — high-priority SQLi test targets</span></div>
+  <div class="dork">site:example.com inurl:"?redirect=" OR inurl:"?url=" OR inurl:"?next=" OR inurl:"?return="<span class="comment">// Redirect parameters — test for unvalidated open redirect vulnerabilities</span></div>
+  <div class="dork">site:example.com inurl:"?file=" OR inurl:"?path=" OR inurl:"?include=" OR inurl:"?load="<span class="comment">// File inclusion parameters — high potential for LFI / RFI exploitation</span></div>
+  <div class="dork">site:example.com inurl:"?search=" OR inurl:"?q=" OR inurl:"?query="<span class="comment">// Search input parameters — test for reflected XSS and SQLi</span></div>
+
+  <h3>Cloud Storage Misconfigurations</h3>
+  <div class="dork dork-danger">site:s3.amazonaws.com "example.com"<span class="comment">// Public AWS S3 buckets associated with target</span></div>
+  <div class="dork dork-danger">site:blob.core.windows.net "example"<span class="comment">// Public Azure Blob Storage containers</span></div>
+  <div class="dork dork-danger">site:storage.googleapis.com "example"<span class="comment">// Public Google Cloud Storage buckets</span></div>
+</section>
+
+<!-- 06 FILETYPE -->
+<section id="filetype">
+  <div class="sec-label">06 — Filetype Operator</div>
+  <h2>Filetype / Extension Dorking</h2>
+  <p>The <mark>filetype:</mark> operator is among the most powerful for surfacing sensitive exposed files. Combine it with <mark>site:</mark> and keyword operators for precision targeting.</p>
+
+  <h3>Configuration Files</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Dork</th><th>What It Finds</th><th>Risk</th></tr>
+    <tr><td>filetype:env site:example.com</td><td>.env files exposing DB credentials, SMTP passwords, API keys</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:conf intext:"password"</td><td>Server/app config files with embedded credentials</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:ini intext:"password"</td><td>Windows INI config files with credentials</td><td class="risk-o">🟠 High</td></tr>
+    <tr><td>filetype:xml intext:"password"</td><td>XML configs — Maven settings, Spring config, WS-Security</td><td class="risk-o">🟠 High</td></tr>
+    <tr><td>filetype:yml intext:"password"</td><td>YAML configs — Docker Compose, GitHub Actions, Ansible</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:json intext:"secret"</td><td>JSON configs with API secrets — Firebase, Google Cloud, AWS</td><td class="risk-o">🟠 High</td></tr>
+    <tr><td>filetype:htpasswd</td><td>.htpasswd files — Basic Auth hashed credentials</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:cfg intext:"password"</td><td>Application .cfg config files with passwords</td><td class="risk-o">🟠 High</td></tr>
+  </table></div>
+
+  <h3>Database Files</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Dork</th><th>What It Finds</th><th>Risk</th></tr>
+    <tr><td>filetype:sql intext:"INSERT INTO"</td><td>Full SQL database dumps with table data</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:db site:example.com</td><td>SQLite raw database files — downloadable and queryable</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:mdb site:example.com</td><td>Microsoft Access database files</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:bak intext:"sql"</td><td>SQL backup files with old/archived data</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:dump site:example.com</td><td>Raw database dump files — MySQL, PostgreSQL</td><td class="risk-r">🔴 Critical</td></tr>
+  </table></div>
+
+  <h3>Log Files</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Dork</th><th>What It Finds</th></tr>
+    <tr><td>filetype:log intext:"password"</td><td>Log files with plaintext passwords from login attempts or config errors</td></tr>
+    <tr><td>filetype:log intext:"username"</td><td>Application logs recording usernames in plaintext</td></tr>
+    <tr><td>filetype:log site:example.com</td><td>All log files on the target domain</td></tr>
+    <tr><td>filetype:log "access denied"</td><td>Access logs revealing directory structure and protected paths</td></tr>
+    <tr><td>filetype:log intext:"error"</td><td>Error logs leaking stack traces, file paths, and connection strings</td></tr>
+  </table></div>
+
+  <h3>Document Files (Data Leakage)</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Dork</th><th>What It Finds</th></tr>
+    <tr><td>filetype:pdf "confidential" site:example.com</td><td>Internal PDFs marked confidential inadvertently indexed</td></tr>
+    <tr><td>filetype:xls intext:"salary" site:example.com</td><td>Salary spreadsheets left on public web servers</td></tr>
+    <tr><td>filetype:xlsx intext:"password"</td><td>Excel files containing password lists or credential tables</td></tr>
+    <tr><td>filetype:docx "internal use only"</td><td>Internal-only Word documents indexed publicly</td></tr>
+    <tr><td>filetype:csv intext:"email" intext:"password"</td><td>CSV exports of user databases with credentials</td></tr>
+    <tr><td>filetype:pptx intext:"confidential"</td><td>Confidential presentation decks — M&amp;A, strategy, financial</td></tr>
+  </table></div>
+
+  <h3>Source Code &amp; Cryptographic Key Files</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Dork</th><th>What It Finds</th><th>Risk</th></tr>
+    <tr><td>filetype:pem intext:"PRIVATE KEY"</td><td>Exposed PEM-encoded private keys — SSL/TLS, SSH</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:key intext:"PRIVATE KEY"</td><td>.key files containing RSA or EC private keys</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:p12 OR filetype:pfx</td><td>PKCS#12 certificate bundles containing private keys</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:sh intext:"password"</td><td>Shell scripts with hardcoded credentials</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:py intext:"password="</td><td>Python scripts with plaintext passwords in source</td><td class="risk-r">🔴 Critical</td></tr>
+    <tr><td>filetype:php intext:"$password"</td><td>PHP source files with password variables</td><td class="risk-o">🟠 High</td></tr>
+    <tr><td>filetype:java intext:"password"</td><td>Java source with hardcoded credentials</td><td class="risk-o">🟠 High</td></tr>
+  </table></div>
+</section>
+
+<!-- 07 RECON WORKFLOW -->
+<section id="recon">
+  <div class="sec-label">07 — Pentest Recon</div>
+  <h2>Google Dorking Recon Workflow</h2>
+  <p>In a structured penetration test, Google Dorking sits in the <strong>passive reconnaissance phase</strong> — before any active scanning or enumeration. Here is a 6-phase systematic approach used by professional pentesters and bug bounty hunters.</p>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num">1</div><div class="phase-title">Surface Mapping — Understand the Target's Footprint</div></div>
+    <p>Start broad. Understand how much of the target is indexed, what the domain structure looks like, and what Google knows about it.</p>
+    <div class="dork dork-safe">site:example.com<span class="comment">// Baseline: how many pages indexed? What's the app structure?</span></div>
+    <div class="dork dork-safe">site:*.example.com -www<span class="comment">// Subdomain enumeration — dev, staging, old, internal subdomains</span></div>
+    <div class="dork dork-safe">info:example.com<span class="comment">// Google's info summary — links to cached version, related pages</span></div>
+    <div class="dork dork-safe">related:example.com<span class="comment">// Similar/related sites — may share infrastructure or developer teams</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num">2</div><div class="phase-title">Technology Fingerprinting — Identify the Stack</div></div>
+    <p>Identify CMS, frameworks, server software, and versions. Each technology fingerprint is a pivot point to known CVEs.</p>
+    <div class="dork dork-safe">site:example.com intext:"Powered by"<span class="comment">// Technology attribution in page footers</span></div>
+    <div class="dork dork-safe">site:example.com inurl:"/wp-content/" OR inurl:"/wp-includes/"<span class="comment">// WordPress — then enumerate plugins: inurl:"/wp-content/plugins/"</span></div>
+    <div class="dork dork-safe">site:example.com intitle:"phpinfo()"<span class="comment">// Exposed phpinfo() pages — gold mine of server configuration data</span></div>
+    <div class="dork dork-safe">site:example.com "Server at" intitle:"Apache"<span class="comment">// Apache default pages showing version and OS</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num">3</div><div class="phase-title">Login &amp; Admin Panel Discovery</div></div>
+    <p>Find every authentication point — admin consoles, VPN portals, API authentication endpoints, remote management interfaces.</p>
+    <div class="dork">site:example.com intitle:"login" OR intitle:"sign in"<span class="comment">// All login pages on the domain</span></div>
+    <div class="dork">site:example.com inurl:admin OR inurl:administrator OR inurl:backend OR inurl:portal<span class="comment">// Admin and backend interfaces</span></div>
+    <div class="dork">site:example.com inurl:dashboard OR inurl:panel OR inurl:cpanel<span class="comment">// Control panels and monitoring dashboards</span></div>
+    <div class="dork">site:example.com inurl:":4443" OR inurl:":8443" OR inurl:":8080"<span class="comment">// Non-standard port admin interfaces — often less secured</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num">4</div><div class="phase-title">Sensitive File Discovery</div></div>
+    <p>Hunt for accidentally exposed configuration, database, log, and backup files.</p>
+    <div class="dork dork-warn">site:example.com filetype:env OR filetype:log OR filetype:sql OR filetype:bak OR filetype:conf<span class="comment">// One combined query sweeping all common sensitive file types</span></div>
+    <div class="dork dork-warn">site:example.com intitle:"index of" -html -htm -php -asp<span class="comment">// Open directories containing non-web files (databases, configs, archives)</span></div>
+    <div class="dork dork-warn">site:example.com inurl:backup OR inurl:archive OR inurl:old<span class="comment">// URLs with backup/archive paths — common developer oversight</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num">5</div><div class="phase-title">Vulnerability Parameter Hunting</div></div>
+    <p>Find injectable parameters and potentially vulnerable input vectors for SQLi, XSS, LFI, and open redirect testing.</p>
+    <div class="dork">site:example.com inurl:"?" inurl:"="<span class="comment">// Any page with GET parameters — broad sweep of injection candidates</span></div>
+    <div class="dork">site:example.com inurl:"?id=" OR inurl:"?page=" OR inurl:"?item="<span class="comment">// Integer-based parameters — highest SQLi potential</span></div>
+    <div class="dork">site:example.com inurl:"?file=" OR inurl:"?path=" OR inurl:"?dir="<span class="comment">// File path parameters — LFI/RFI candidates</span></div>
+    <div class="dork">site:example.com inurl:"?url=" OR inurl:"?next=" OR inurl:"?redirect="<span class="comment">// Redirect parameters — open redirect and SSRF candidates</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header"><div class="phase-num">6</div><div class="phase-title">Third-Party Leak Discovery</div></div>
+    <p>Search developer collaboration tools, code hosting platforms, and paste sites for accidental credential exposure.</p>
+    <div class="dork dork-danger">site:github.com "example.com" "password" OR "token" OR "secret" OR "api_key"<span class="comment">// GitHub code leaks associated with target domain</span></div>
+    <div class="dork dork-danger">site:pastebin.com "example.com"<span class="comment">// Paste site content referencing the target</span></div>
+    <div class="dork dork-danger">site:trello.com "example.com"<span class="comment">// Public Trello boards containing target references</span></div>
+    <div class="dork dork-danger">site:s3.amazonaws.com "example.com" OR site:blob.core.windows.net "example"<span class="comment">// Public cloud storage buckets associated with target</span></div>
+  </div>
+</section>
+
+<!-- 08 DEFENSE -->
+<section id="defense">
+  <div class="sec-label">08 — Defense</div>
+  <h2>Defending Against Google Dorking</h2>
+  <p>Understanding how to attack via Google Dorks also makes you a better defender. These are the techniques used to prevent accidental information exposure on Google's index.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">robots.txt</div>
+      <p>Instruct crawlers not to index sensitive paths. Note: <mark>robots.txt</mark> is publicly readable — it tells attackers exactly what you're hiding. Use as defense-in-depth.</p>
+      <div class="dork" style="font-size:11px;color:var(--accent3)">User-agent: *
+Disallow: /admin/
+Disallow: /config/
+Disallow: /backup/
+Disallow: /.git/</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Meta Noindex Tag</div>
+      <p>Prevent Google indexing sensitive pages even if crawled — add to every admin/config page's HTML head.</p>
+      <div class="dork" style="font-size:11px;color:var(--accent3)">&lt;meta name="robots"
+  content="noindex, nofollow"&gt;</div>
+    </div>
+    <div class="card">
+      <div class="card-title">X-Robots-Tag Header</div>
+      <p>For non-HTML files (PDFs, docs), use the HTTP response header to signal noindex — meta tags don't work in binary files.</p>
+      <div class="dork" style="font-size:11px;color:var(--accent3)">X-Robots-Tag: noindex, nofollow</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Google Search Console</div>
+      <p>Monitor what's actually indexed on your domain. Submit URL removal requests for sensitive pages. Use the Coverage report to audit all indexed content.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Proper Access Controls</div>
+      <p>Never rely on obscurity. Sensitive admin panels and files must require authentication regardless of whether they're indexed. Require MFA on all admin portals.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">.gitignore Hygiene</div>
+      <p>Prevent credential commits at the source. Add these to every project:</p>
+      <div class="dork" style="font-size:11px;color:var(--accent3)">.env
+*.log
+config.php
+*.pem
+*.key
+*.p12
+database.yml</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Web Server Config</div>
+      <p>Disable directory listings. Suppress version disclosure in headers. Remove default pages like phpinfo.php and server test pages.</p>
+      <div class="dork" style="font-size:11px;color:var(--accent3)"># Apache
+Options -Indexes
+
+# Nginx
+autoindex off;
+server_tokens off;</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Regular Dork Audits</div>
+      <p>Run Google Dorks against your own domain on a scheduled basis as part of continuous security monitoring. Find what attackers find, before they do.</p>
+    </div>
+  </div>
+
+  <h3>Audit Your Own Domain — Defensive Dorks</h3>
+  <div class="dork dork-safe">site:yourdomain.com filetype:env OR filetype:log OR filetype:sql OR filetype:bak OR filetype:conf<span class="comment">// Check for any exposed sensitive files in Google's index</span></div>
+  <div class="dork dork-safe">site:yourdomain.com intitle:"index of"<span class="comment">// Check for any open directory listings</span></div>
+  <div class="dork dork-safe">site:yourdomain.com intext:"DB_PASSWORD" OR intext:"mysql_connect" OR intext:"PRIVATE KEY"<span class="comment">// Check for accidentally indexed credential content</span></div>
+  <div class="dork dork-safe">site:github.com "yourdomain.com" password OR token OR secret OR api_key<span class="comment">// Check for developer credential leaks on GitHub</span></div>
+  <div class="dork dork-safe">site:pastebin.com "yourdomain.com"<span class="comment">// Monitor paste sites for content about your domain</span></div>
+</section>
+
+<!-- 09 CHEATSHEET -->
+<section id="cheatsheet">
+  <div class="sec-label">09 — Quick Reference</div>
+  <h2>Complete Cheat Sheet</h2>
+  <p>Every major dork pattern in one reference table, organized by category.</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>Category</th><th>Dork / Operator</th><th>Purpose</th></tr>
+    <tr><td>site:</td><td>site:example.com</td><td>Scope all results to one domain</td></tr>
+    <tr><td>site: subdomains</td><td>site:*.example.com -www</td><td>Subdomain enumeration</td></tr>
+    <tr><td>intitle:</td><td>intitle:"admin"</td><td>Page title contains keyword</td></tr>
+    <tr><td>allintitle:</td><td>allintitle:admin login panel</td><td>All words must be in title</td></tr>
+    <tr><td>inurl:</td><td>inurl:/admin/login</td><td>URL contains path pattern</td></tr>
+    <tr><td>intext:</td><td>intext:"password"</td><td>Body text contains keyword</td></tr>
+    <tr><td>filetype:</td><td>filetype:pdf</td><td>Find specific file extensions</td></tr>
+    <tr><td>cache:</td><td>cache:example.com</td><td>Google cached snapshot of URL</td></tr>
+    <tr><td>Open dirs</td><td>intitle:"index of" "parent directory"</td><td>Exposed directory listings</td></tr>
+    <tr><td>Open uploads</td><td>intitle:"index of" "/uploads/"</td><td>Unprotected upload folders</td></tr>
+    <tr><td>.env files</td><td>filetype:env intext:"DB_PASSWORD"</td><td>Environment credential files</td></tr>
+    <tr><td>DB dump</td><td>filetype:sql intext:"INSERT INTO"</td><td>Exposed SQL database dumps</td></tr>
+    <tr><td>SQLite</td><td>filetype:db site:example.com</td><td>Raw SQLite database files</td></tr>
+    <tr><td>Log files</td><td>filetype:log intext:"password"</td><td>Application logs with credentials</td></tr>
+    <tr><td>Private keys</td><td>filetype:pem intext:"PRIVATE KEY"</td><td>Exposed SSL/SSH private keys</td></tr>
+    <tr><td>YAML config</td><td>filetype:yml intext:"password:"</td><td>Docker/CI/CD config with creds</td></tr>
+    <tr><td>Git exposure</td><td>intitle:"index of /.git"</td><td>Exposed .git repo directories</td></tr>
+    <tr><td>phpMyAdmin</td><td>intitle:"phpMyAdmin" inurl:"/pma/"</td><td>phpMyAdmin interfaces</td></tr>
+    <tr><td>phpinfo()</td><td>intitle:"phpinfo()" site:target</td><td>Exposed PHP configuration pages</td></tr>
+    <tr><td>WordPress</td><td>inurl:/wp-admin/ site:target</td><td>WordPress admin panels</td></tr>
+    <tr><td>Joomla</td><td>inurl:/administrator/ site:target</td><td>Joomla admin panels</td></tr>
+    <tr><td>Camera</td><td>intitle:"Network Camera" inurl:view</td><td>Exposed IP cameras</td></tr>
+    <tr><td>Router</td><td>intitle:"RouterOS" inurl:"/winbox/"</td><td>MikroTik management panels</td></tr>
+    <tr><td>SQL errors</td><td>intext:"sql syntax near"</td><td>SQL error messages — SQLi signal</td></tr>
+    <tr><td>Stack trace</td><td>intext:"Fatal error" intext:"stack trace"</td><td>App exception info leaks</td></tr>
+    <tr><td>Swagger API</td><td>inurl:swagger site:target</td><td>Exposed API documentation</td></tr>
+    <tr><td>Kibana</td><td>intitle:"Kibana" inurl:":5601"</td><td>Exposed Kibana dashboards</td></tr>
+    <tr><td>Grafana</td><td>intitle:"Grafana" inurl:/login</td><td>Exposed Grafana dashboards</td></tr>
+    <tr><td>Laravel debug</td><td>intitle:"Laravel" intext:"APP_DEBUG"</td><td>Laravel apps in debug mode</td></tr>
+    <tr><td>GitHub creds</td><td>site:github.com "domain.com" "password"</td><td>Third-party credential leaks</td></tr>
+    <tr><td>Pastebin leaks</td><td>site:pastebin.com "example.com"</td><td>Paste site exposure</td></tr>
+    <tr><td>S3 buckets</td><td>site:s3.amazonaws.com "example"</td><td>Public AWS cloud storage</td></tr>
+    <tr><td>Params — SQLi</td><td>site:target inurl:"?id="</td><td>Integer param SQLi candidates</td></tr>
+    <tr><td>Params — LFI</td><td>site:target inurl:"?file="</td><td>File path inclusion parameters</td></tr>
+    <tr><td>Params — redirect</td><td>site:target inurl:"?url="</td><td>Open redirect / SSRF params</td></tr>
+    <tr><td>Params — XSS</td><td>site:target inurl:"?search="</td><td>Search input — reflected XSS</td></tr>
+    <tr><td>OR logic</td><td>site:gov OR site:mil</td><td>Logical OR across terms</td></tr>
+    <tr><td>Exclude</td><td>site:example.com -inurl:blog</td><td>Exclude terms with minus</td></tr>
+    <tr><td>Exact phrase</td><td>"default password" site:target</td><td>Exact string matching</td></tr>
+    <tr><td>Wildcard</td><td>"index of *"</td><td>Match any word in phrase</td></tr>
+  </table></div>
+</section>
+
+<!-- 10 GHDB -->
+<section id="ghdb">
+  <div class="sec-label">10 — Resources</div>
+  <h2>Google Hacking Database (GHDB)</h2>
+  <p>The <strong>Google Hacking Database</strong> (maintained at <strong>exploit-db.com/google-hacking-database</strong>) is the largest community-curated repository of Google Dorks, organized into 14 categories. It was created by security researcher Johnny Long and is now maintained by Offensive Security — the same organization behind Kali Linux and OSCP.</p>
+
+  <h3>GHDB Categories</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Category</th><th>Description</th><th>Examples</th></tr>
+    <tr><td>Footholds</td><td>Dorks providing an initial access point — exposed shells, command injection</td><td>Web shells, writable directories</td></tr>
+    <tr><td>Files containing usernames</td><td>Files directly exposing usernames and account info</td><td>/etc/passwd, user exports</td></tr>
+    <tr><td>Sensitive directories</td><td>Exposed directories with sensitive data accessible via browser</td><td>Open /backup/, /config/, /.git/</td></tr>
+    <tr><td>Web server detection</td><td>Fingerprint web server software and versions</td><td>Apache/IIS/Nginx default pages</td></tr>
+    <tr><td>Vulnerable files</td><td>Specific files known to be vulnerable in certain software versions</td><td>xmlrpc.php, fckeditor, timthumb</td></tr>
+    <tr><td>Vulnerable servers</td><td>Server configurations known to be exploitable</td><td>Exposed CGI scripts, shell configs</td></tr>
+    <tr><td>Error messages</td><td>Server/application errors leaking sensitive technical information</td><td>SQL errors, stack traces, warnings</td></tr>
+    <tr><td>Files containing juicy info</td><td>Config, log, and data files with sensitive content</td><td>.env, config.php, web.config</td></tr>
+    <tr><td>Files containing passwords</td><td>Files directly exposing passwords in plaintext or hashed form</td><td>SQL dumps, password files, htpasswd</td></tr>
+    <tr><td>Sensitive online shopping info</td><td>E-commerce data and payment information exposure</td><td>Order exports, transaction logs</td></tr>
+    <tr><td>Network or vulnerability data</td><td>Firewall configs, network topology, scanner output files</td><td>Nessus/Nmap scan reports</td></tr>
+    <tr><td>Pages containing login portals</td><td>Login pages for all types of systems and services</td><td>Admin portals, VPN login, SSH web</td></tr>
+    <tr><td>Various online devices</td><td>IoT, routers, cameras, printers, ICS/SCADA systems</td><td>Webcams, PLCs, smart switches</td></tr>
+    <tr><td>Advisories and vulnerabilities</td><td>Pages referencing known CVEs and vendor security advisories</td><td>CVE reference pages, patch notes</td></tr>
+  </table></div>
+
+  <h3>Automated Dorking Tools</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Tool</th><th>Language</th><th>Description</th></tr>
+    <tr><td>Pagodo</td><td>Python</td><td>Automates GHDB dork queries against a target with configurable delays to avoid rate limiting.</td></tr>
+    <tr><td>GoogleDorker</td><td>Python</td><td>Targeted dork automation — runs a set of dorks against a specific domain and aggregates results.</td></tr>
+    <tr><td>theHarvester</td><td>Python</td><td>Full OSINT framework with Google/Bing/LinkedIn integration. Built into Kali Linux.</td></tr>
+    <tr><td>Recon-ng</td><td>Python</td><td>Modular OSINT framework (Metasploit-style UI) with Google dorking modules.</td></tr>
+    <tr><td>FOCA</td><td>C# / Windows</td><td>Extracts metadata from documents found via Google Dorks — author names, usernames, software versions.</td></tr>
+    <tr><td>Maltego</td><td>Java</td><td>Visual OSINT and link analysis with transforms for Google, Shodan, and dozens of data sources.</td></tr>
+    <tr><td>GooFuzz</td><td>Bash</td><td>Lightweight shell script to automate common dork patterns against a target domain.</td></tr>
+  </table></div>
+
+  <h3>Complete Passive Recon Stack</h3>
+  <div class="info-box">
+    <strong>SHODAN:</strong> Internet-wide device and port scanning. Find servers by banner, certificate, or OS version.<br><br>
+    <strong>CENSYS:</strong> TLS certificate enumeration and host discovery. Find hosts others miss via cert transparency logs.<br><br>
+    <strong>theHarvester:</strong> Email, subdomain, and name harvesting from multiple search engines and public APIs.<br><br>
+    <strong>DNSDumpster:</strong> DNS record enumeration — MX, TXT, CNAME, SOA records for full subdomain mapping.<br><br>
+    <strong>Wayback Machine:</strong> Historical page snapshots — complements Google cache for removed content.<br><br>
+    <strong>Hunter.io:</strong> Email pattern discovery for social engineering and phishing assessment scope.
+  </div>
+
+  <h3>Google Dorking vs. Other Search Engines</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Engine</th><th>Key Operators</th><th>Notes</th></tr>
+    <tr><td>Google</td><td>site: intitle: inurl: filetype:</td><td>Largest index. Best for filetype and inurl dorks. Most results for exposed files.</td></tr>
+    <tr><td>Bing</td><td>site: intitle: inurl: filetype: ip:</td><td>Unique ip: operator finds all sites on a specific IP. Sometimes indexes content Google doesn't.</td></tr>
+    <tr><td>DuckDuckGo</td><td>site: intitle: inurl:</td><td>Powered by Bing index. Useful for privacy-preserving recon — no search logging.</td></tr>
+    <tr><td>Shodan</td><td>hostname: org: port: product:</td><td>Indexes device banners, not web pages. Indispensable for infrastructure recon.</td></tr>
+    <tr><td>Censys</td><td>parsed.names: autonomous_system: services.port:</td><td>Certificate and host-level search. Best for TLS certificate enumeration and subdomain discovery.</td></tr>
+  </table></div>
+
+  <div class="warning">
+    <strong>⚠ RATE LIMITING:</strong> Google will temporarily block your IP if you run too many automated dork queries rapidly. You'll see a CAPTCHA. Mitigations: use a VPN with rotation, add 10–30 second delays, use <mark>pagodo</mark> with the <mark>--delay</mark> flag, or use the Google Custom Search API (100 free queries/day) for automated workflows.
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Google Dorking Complete Reference &nbsp;·&nbsp; For Authorized Security Research Only &nbsp;·&nbsp; eJPT / OSCP Exam Prep
+</footer>
+
+<script>
+(function() {
+  var nav = document.getElementById('main-nav');
+  var links = nav.querySelectorAll('a');
+  var sections = document.querySelectorAll('section[id]');
+  var NAV_H = nav.offsetHeight;
+
+  // ── CLICK: smooth scroll with nav offset ──
+  links.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = this.getAttribute('data-target');
+      var el = document.getElementById(id);
+      if (!el) return;
+      var y = el.getBoundingClientRect().top + window.pageYOffset - NAV_H - 16;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+  });
+
+  // ── SCROLL: active nav highlighting ──
+  function onScroll() {
+    var scrollY = window.pageYOffset + NAV_H + 20;
+    var current = '';
+    sections.forEach(function(sec) {
+      if (sec.offsetTop <= scrollY) {
+        current = sec.id;
+      }
+    });
+    links.forEach(function(link) {
+      if (link.getAttribute('data-target') === current) {
+        link.classList.add('active');
+        // Scroll nav so active item is visible
+        var linkLeft = link.offsetLeft;
+        var navW = nav.offsetWidth;
+        var linkW = link.offsetWidth;
+        if (linkLeft < nav.scrollLeft || linkLeft + linkW > nav.scrollLeft + navW) {
+          nav.scrollLeft = linkLeft - navW / 2 + linkW / 2;
+        }
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // run once on load
+
+  // ── CLICK DORK BOX: copy to clipboard ──
+  document.querySelectorAll('.dork').forEach(function(box) {
+    box.addEventListener('click', function() {
+      var clone = box.cloneNode(true);
+      var comment = clone.querySelector('.comment');
+      if (comment) comment.remove();
+      var text = (clone.innerText || clone.textContent).trim();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function() {
+          box.style.outline = '1px solid var(--accent3)';
+          setTimeout(function() { box.style.outline = ''; }, 900);
+        }).catch(function() {});
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
