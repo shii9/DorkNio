@@ -28,7 +28,6 @@ An advanced, client-side Open-Source Intelligence (OSINT) tool that simplifies c
 - [Key Features](#-key-features)
 - [Technology Stack](#-technology-stack)
 - [Security & Privacy](#-security--privacy)
-- [Deployment](#-deployment)
 - [Disclaimer](#-disclaimer)
 
 ---
@@ -64,18 +63,6 @@ We treat your data and security as a first-class citizen:
 * **100% Client-Side:** The application runs entirely in the browser. There are no backend APIs, no telemetry, and no tracking. Your target domains and searches never leave your machine.
 * **Strict Input Sanitization:** All user inputs (domains, search terms) are actively sanitized to strip HTML tags, prevent XSS attacks, and block malicious script execution (`javascript:`).
 * **Browser Performance:** Hard limits and length constraints are enforced on input fields to prevent browser memory degradation from massive strings.
-
----
-
-## 🌐 Deployment
-
-DorkNio is configured for seamless deployment to GitHub Pages.
-
-To build and deploy the application from your local machine:
-```sh
-npm run deploy
-```
-This script will build an optimized production bundle and push it to the `gh-pages` branch. Ensure your GitHub repository settings are configured to host Pages from the `gh-pages` branch.
 
 ---
 
