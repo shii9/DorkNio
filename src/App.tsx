@@ -79,10 +79,7 @@ function sanitizeArray(arr: string[], maxItems: number, maxItemLength: number, o
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
-    const saved = localStorage.getItem('dorknio_active_tab');
-    return (saved as ActiveTab) || 'home';
-  });
+  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [inputs, setInputs] = useState<BuilderInputs>({ ...DEFAULT_INPUTS });
   const [query, setQuery] = useState<GeneratedQuery | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>(loadHistory);
@@ -98,9 +95,7 @@ export default function App() {
 
   const isExtension = window.location.protocol === 'chrome-extension:' || window.location.protocol === 'moz-extension:';
 
-  useEffect(() => {
-    localStorage.setItem('dorknio_active_tab', activeTab);
-  }, [activeTab]);
+
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
