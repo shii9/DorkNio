@@ -28,7 +28,6 @@ An advanced, client-side Open-Source Intelligence (OSINT) tool that simplifies c
 - [Key Features](#-key-features)
 - [Technology Stack](#-technology-stack)
 - [Security & Privacy](#-security--privacy)
-- [Getting Started (Local Development)](#-getting-started-local-development)
 - [Deployment](#-deployment)
 - [Disclaimer](#-disclaimer)
 
@@ -65,36 +64,6 @@ We treat your data and security as a first-class citizen:
 * **100% Client-Side:** The application runs entirely in the browser. There are no backend APIs, no telemetry, and no tracking. Your target domains and searches never leave your machine.
 * **Strict Input Sanitization:** All user inputs (domains, search terms) are actively sanitized to strip HTML tags, prevent XSS attacks, and block malicious script execution (`javascript:`).
 * **Browser Performance:** Hard limits and length constraints are enforced on input fields to prevent browser memory degradation from massive strings.
-
----
-
-## ⚙️ Getting Started (Local Development)
-
-If you'd like to run DorkNio locally or contribute to the project, follow these steps:
-
-### Prerequisites
-* [Node.js](https://nodejs.org/en/) (v18 or higher recommended)
-* npm (comes with Node.js)
-
-### Installation
-
-1. **Clone the repository**
-   ```sh
-   git clone https://github.com/shii9/DorkNio.git
-   ```
-2. **Navigate into the directory**
-   ```sh
-   cd DorkNio
-   ```
-3. **Install NPM packages**
-   ```sh
-   npm install
-   ```
-4. **Start the development server**
-   ```sh
-   npm run dev
-   ```
-   *The application will be available at `http://localhost:5173`.*
 
 ---
 
