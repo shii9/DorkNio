@@ -1,59 +1,32 @@
-# Dorknio
+<div align="center">
+  <img src="https://raw.githubusercontent.com/shii9/DorkNio/main/public/favicon.svg" alt="DorkNio Logo" width="120" />
+  <h1>DorkNio</h1>
+  <p><strong>Advanced Open-Source Intelligence (OSINT) Gathering Made Simple</strong></p>
+  
+  <p>
+    <a href="https://shii9.github.io/DorkNio/"><strong>View Live Application »</strong></a>
+  </p>
+</div>
 
-Dorknio is an advanced, client-side web application designed to simplify and streamline open-source intelligence (OSINT) gathering through targeted Google search queries (Google Dorking).
+<br />
 
-## 🚀 Features
+Dorknio is an advanced, client-side web application designed to simplify and streamline open-source intelligence (OSINT) gathering through targeted Google search queries (Google Dorking). It provides a sleek, modern, and highly intuitive interface to generate complex search operators without needing to memorize syntax.
 
-- **Intuitive Dork Builder**: Construct complex search queries visually by specifying search parameters (inurl, intitle, site, etc.) and file types without memorizing syntax.
-- **Pre-built Templates**: Quickly select from a library of common reconnaissance scenarios (e.g., directory listings, exposed configuration files, database dumps) tailored to your target domain.
-- **Syntax Reference**: Instant access to a comprehensive guide of Google Dork operators and their usage examples.
+## 🚀 Key Features
+
+- **Intuitive Dork Builder**: Construct complex search queries visually by specifying search parameters (`inurl`, `intitle`, `site`, etc.) and file types effortlessly.
+- **Pre-built Templates**: Quickly select from a curated library of common reconnaissance scenarios (e.g., directory listings, exposed configuration files, database dumps) tailored to your target domain.
+- **Syntax Reference**: Instant access to a comprehensive guide of Google Dork operators, their meanings, and practical usage examples.
 - **History Tracking**: Automatically saves your generated queries locally so you can easily review, reuse, or copy previous searches.
-- **Client-Side Only (No Telemetry)**: The application runs entirely in your browser with zero server-side APIs, ensuring that your targets and queries remain completely private.
-- **Professional & Responsive UI**: Designed with a sleek, dark-themed interface, featuring smooth animations and a responsive layout suitable for both desktop and mobile devices.
+- **Client-Side Only**: The application runs entirely in your browser. There are no backend APIs, no telemetry, and no tracking. Your target domains and search parameters remain 100% private to your local machine.
 
-## 🛠️ Technology Stack
+## 🎨 User Interface & Experience
 
-- **React 18** with **TypeScript** for robust component architecture and type safety.
-- **Vite** for lightning-fast development server and optimized production builds.
-- **Vanilla CSS** with CSS Variables to manage theme colors, animations, and a modern glassmorphic look.
-- **Lucide React** for crisp, scalable iconography.
-
-## 🔒 Security Posture
-
-Dorknio has been built with security in mind:
-- **No External Dependencies**: Zero reliance on external backend servers or telemetry APIs.
-- **Input Sanitization**: All user inputs (domains, search terms) are sanitized client-side to strip HTML tags, prevent cross-site scripting (XSS), and block malicious script protocols (`javascript:`).
-- **Length Constraints**: Stringent maximum length limits are enforced on all input fields to mitigate browser performance degradation.
-- **Data Privacy**: Search history is kept locally on the user's machine.
-
-## 📦 Installation & Setup
-
-Ensure you have [Node.js](https://nodejs.org/) installed, then follow these steps:
-
-1. **Navigate to the project directory**:
-   ```bash
-   cd dorknio
-   ```
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-3. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
-   *The application will typically run at `http://localhost:5173`.*
-
-## 🏗️ Building for Production
-
-To create an optimized production build:
-
-```bash
-npm run build
-```
-
-This will output static files into the `dist` directory, which can be deployed to any static web hosting service (e.g., GitHub Pages, Vercel, Netlify).
+DorkNio is built with a focus on delivering a premium user experience:
+- **Responsive Layout**: Adapts perfectly to both desktop environments and mobile screens.
+- **Dark-Theme Optimized**: Features a sleek, hacker-friendly dark mode with subtle glassmorphic elements and neon accents.
+- **Magnetic Micro-Interactions**: Custom cursors and highly responsive CSS animations ensure the tool feels alive and incredibly smooth.
 
 ## ⚠️ Disclaimer
 
-This tool is intended for authorized security testing, educational purposes, and legal open-source intelligence gathering only. Users are responsible for their actions and should ensure they have permission before conducting reconnaissance on target domains.
+This tool is strictly intended for **authorized security testing, educational purposes, and legal open-source intelligence gathering**. Users are solely responsible for their actions and must ensure they have explicit permission before conducting reconnaissance on any target domains or infrastructure.

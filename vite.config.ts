@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/DorkNio/',
   plugins: [react()],
   build: {
     // Extension-friendly: don't split vendor chunks,
