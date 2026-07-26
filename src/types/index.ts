@@ -43,6 +43,7 @@ export interface BuilderInputs {
   useCache: boolean;
   useInfo: boolean;
   useRelated: boolean;
+  exactMatch: boolean;
   searchEngines: SearchEngine[];
 }
 

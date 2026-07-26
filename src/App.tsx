@@ -12,7 +12,6 @@ import { ThemePicker, ACCENTS, type AccentOption } from './components/ThemePicke
 
 // SEO & Content Tabs
 import HomeTab from './components/HomeTab';
-import CustomCursor from './components/CustomCursor';
 const DEFAULT_INPUTS: BuilderInputs = {
   domain: '', includeSubdomains: false, excludeSubdomains: [],
   titleKeywords: [], urlPattern: '', bodyKeywords: [],
@@ -21,6 +20,7 @@ const DEFAULT_INPUTS: BuilderInputs = {
   searchGoal: 'custom', noiseReduction: [],
   rangeMin: '', rangeMax: '', useWildcard: false,
   useCache: false, useInfo: false, useRelated: false,
+  exactMatch: false,
   searchEngines: ['google'],
 };
 
@@ -504,9 +504,6 @@ export default function App() {
 
       {/* Processing Overlay */}
       <ProcessingOverlay isVisible={isProcessing} message={procMessage} overrideColor={procColor || undefined} />
-
-      {/* Custom Cursor */}
-      <CustomCursor />
     </div>
   );
 }

@@ -2,8 +2,10 @@ import type { BuilderInputs, GeneratedQuery, HighlightedToken, FollowUpDork, Sea
 import { TECH_PATTERNS } from '../data/operators';
 import { v4 as uuidv4 } from '../utils/uuid';
 
-function quote(s: string): string {
-  return s.includes(' ') ? `"${s}"` : s;
+function quote(s: string, exact: boolean = true): string {
+  const clean = s.replace(/^"+|"+$/g, '');
+  if (!exact) return clean;
+  return `"${clean}"`;
 }
 
 export function buildQuery(inputs: BuilderInputs): string {
@@ -37,23 +39,19 @@ export function buildQuery(inputs: BuilderInputs): string {
   }
 
   // 5. Title keywords
-  if (inputs.titleKeywords.length === 1) {
-    parts.push(`intitle:${quote(inputs.titleKeywords[0])}`);
-  } else if (inputs.titleKeywords.length > 1) {
-    parts.push(`allintitle:${inputs.titleKeywords.join(' ')}`);
+  if (inputs.titleKeywords.length > 0) {
+    const titleOp = inputs.exactMatch ? 'intitle:' : 'intittle:';
+    inputs.titleKeywords.forEach(kw => {
+      parts.push(`${titleOp}${quote(kw, inputs.exactMatch)}`);
+    });
   }
 
   // 6. URL pattern
   if (inputs.urlPattern.trim()) {
-    // Support multiple URL pattern tags (space separated in the inputs.urlPattern string).
-    // If there's one pattern, use `inurl:`. If multiple, use `allinurl:` to require all terms in the URL,
-    // matching the behavior used for title keywords (intitle/allintitle).
     const urlParts = inputs.urlPattern.trim().split(/\s+/).filter(Boolean);
-    if (urlParts.length === 1) {
-      parts.push(`inurl:${quote(urlParts[0])}`);
-    } else if (urlParts.length > 1) {
-      parts.push(`allinurl:${urlParts.join(' ')}`);
-    }
+    urlParts.forEach(p => {
+      parts.push(`inurl:${quote(p, inputs.exactMatch)}`);
+    });
   }
 
   // 7. URL parameters
@@ -66,17 +64,17 @@ export function buildQuery(inputs: BuilderInputs): string {
   }
 
   // 8. Body keywords
-  if (inputs.bodyKeywords.length === 1) {
-    parts.push(`intext:${quote(inputs.bodyKeywords[0])}`);
-  } else if (inputs.bodyKeywords.length > 1) {
-    parts.push(`allintext:${inputs.bodyKeywords.join(' ')}`);
+  if (inputs.bodyKeywords.length > 0) {
+    inputs.bodyKeywords.forEach(kw => {
+      parts.push(`intext:${quote(kw, inputs.exactMatch)}`);
+    });
   }
 
   // 8.5. Anchor keywords
-  if (inputs.anchorKeywords && inputs.anchorKeywords.length === 1) {
-    parts.push(`inanchor:${quote(inputs.anchorKeywords[0])}`);
-  } else if (inputs.anchorKeywords && inputs.anchorKeywords.length > 1) {
-    parts.push(`allinanchor:${inputs.anchorKeywords.join(' ')}`);
+  if (inputs.anchorKeywords && inputs.anchorKeywords.length > 0) {
+    inputs.anchorKeywords.forEach(kw => {
+      parts.push(`inanchor:${quote(kw, inputs.exactMatch)}`);
+    });
   }
 
   // 9. Exact phrases
@@ -147,7 +145,7 @@ function getGoalDefaults(goal: SearchGoal, _domain: string): string[] {
 
 export function tokenize(query: string): HighlightedToken[] {
   const tokens: HighlightedToken[] = [];
-  const regex = /(site:|intitle:|allintitle:|inurl:|allinurl:|intext:|allintext:|inanchor:|allinanchor:|filetype:|ext:|cache:|related:|info:|-inurl:|-site:|-intitle:|"[^"]*"|-\w+|\S+)/g;
+  const regex = /(site:|intitle:|intittle:|allintitle:|inurl:|allinurl:|intext:|allintext:|inanchor:|allinanchor:|filetype:|ext:|cache:|related:|info:|-inurl:|-site:|-intitle:|-intittle:|"[^"]*"|-\w+|\S+)/g;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(query)) !== null) {
     const text = match[0];
@@ -158,7 +156,7 @@ export function tokenize(query: string): HighlightedToken[] {
 
 function classifyToken(token: string): HighlightedToken['type'] {
   if (token.startsWith('site:') || token.startsWith('-site:')) return 'site';
-  if (token.startsWith('intitle:') || token.startsWith('allintitle:')) return 'intitle';
+  if (token.startsWith('intitle:') || token.startsWith('intittle:') || token.startsWith('allintitle:')) return 'intitle';
   if (token.startsWith('inurl:') || token.startsWith('allinurl:') || token.startsWith('-inurl:')) return 'inurl';
   if (token.startsWith('intext:') || token.startsWith('allintext:')) return 'intext';
   if (token.startsWith('inanchor:') || token.startsWith('allinanchor:')) return 'intext'; // Style as intext
@@ -175,7 +173,7 @@ export function scoreQuery(query: string): number {
   let score = 0;
   if (/site:/.test(query)) score += 2;
   if (/filetype:/.test(query)) score += 2;
-  if (/intitle:|allintitle:/.test(query)) score += 1.5;
+  if (/intitle:|intittle:|allintitle:/.test(query)) score += 1.5;
   if (/inurl:|allinurl:/.test(query)) score += 1.5;
   if (/intext:|allintext:|inanchor:|allinanchor:/.test(query)) score += 1;
   if (/"[^"]+"/.test(query)) score += 1;
@@ -199,8 +197,8 @@ export function explainQueryStructured(query: string): ExplanationPart[] {
     parts.push({ operator: `filetype:${m?.[1]}`, desc: `Filters results to only include ${m?.[1].toUpperCase()} files.` });
   }
 
-  if (/intitle:"?([^"\s]+)"?/.test(query)) {
-    const m = query.match(/intitle:"?([^"]+)"?/);
+  if (/(?:intitle|intittle):"?([^"\s]+)"?/.test(query)) {
+    const m = query.match(/(?:intitle|intittle):"?([^"]+)"?/);
     parts.push({ operator: `intitle:${m?.[1]}`, desc: `Requires the specified keyword to appear in the page title.` });
   }
 
@@ -322,8 +320,8 @@ export function parseDorkToInputs(dork: string, current: BuilderInputs): Builder
     if (!next.fileTypes.includes(ft)) next.fileTypes = [...next.fileTypes, ft];
   }
 
-  // Extract intitle:
-  const titleMatches = dork.matchAll(/intitle:(?:"([^"]+)"|([^\s]+))/g);
+  // Extract intitle: / intittle:
+  const titleMatches = dork.matchAll(/(?:intitle|intittle):(?:"([^"]+)"|([^\s]+))/g);
   for (const m of titleMatches) {
     const val = m[1] || m[2];
     if (val && !next.titleKeywords.includes(val)) next.titleKeywords = [...next.titleKeywords, val];
@@ -429,7 +427,7 @@ export function mergeInputs(current: BuilderInputs, incoming: BuilderInputs): Bu
   });
 
   // Booleans - OR
-  const boolFields: (keyof BuilderInputs)[] = ['includeSubdomains', 'useWildcard', 'useCache', 'useInfo', 'useRelated'];
+  const boolFields: (keyof BuilderInputs)[] = ['includeSubdomains', 'useWildcard', 'useCache', 'useInfo', 'useRelated', 'exactMatch'];
   boolFields.forEach(field => {
     (merged as any)[field] = (current[field] as boolean) || (incoming[field] as boolean);
   });

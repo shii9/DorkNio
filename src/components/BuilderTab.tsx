@@ -260,9 +260,57 @@ export default function BuilderTab({ inputs, query, onInputChange, onBuild: _onB
               </div>
             </div>
 
-            <div className="section-header">
-              <div className="section-badge">02</div>
-              <div className="section-title">Dork Operators</div>
+            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="section-badge">02</div>
+                <div className="section-title">Dork Operators</div>
+              </div>
+
+              {/* MATCH MODE CONTROL IN HEADER */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--s1)', padding: '4px 8px 4px 12px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--mono)' }}>
+                  <span>🎯</span> MATCH MODE
+                </div>
+                <div style={{ display: 'flex', gap: 0, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                  <button
+                    onClick={() => onInputChange('exactMatch', false as any)}
+                    title="Broad Mode — keywords passed without quotes (e.g. intitle:free api key)"
+                    style={{
+                      padding: '4px 12px',
+                      fontSize: 10,
+                      fontWeight: !inputs.exactMatch ? 800 : 500,
+                      fontFamily: 'var(--mono)',
+                      background: !inputs.exactMatch ? 'var(--accent-primary)' : 'var(--s2)',
+                      color: !inputs.exactMatch ? '#000' : 'var(--muted)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    BROAD
+                  </button>
+                  <button
+                    onClick={() => onInputChange('exactMatch', true as any)}
+                    title="Exact Mode — multi-word values wrapped in quotes (e.g. intitle:&quot;free api key&quot;)"
+                    style={{
+                      padding: '4px 12px',
+                      fontSize: 10,
+                      fontWeight: inputs.exactMatch ? 800 : 500,
+                      fontFamily: 'var(--mono)',
+                      background: inputs.exactMatch ? 'var(--accent-primary)' : 'var(--s2)',
+                      color: inputs.exactMatch ? '#000' : 'var(--muted)',
+                      border: 'none',
+                      borderLeft: '1px solid var(--border)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    EXACT
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="operators-grid" style={{ display: 'grid', gap: 16 }}>
@@ -289,7 +337,7 @@ export default function BuilderTab({ inputs, query, onInputChange, onBuild: _onB
               {/* MODULE: TITLE */}
               <div className="op-field" style={{ margin: 0, background: 'var(--s1)', borderRadius: '12px', padding: '16px', border: '1px solid var(--border)' }}>
                 <div className="op-label" style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8, fontSize: '11px', letterSpacing: '0.05em', marginBottom: 4 }}>
-                  <span>🏷️</span> INTITLE: KEYWORDS
+                  <span>🏷️</span> {inputs.exactMatch ? 'INTITLE:' : 'INTITTLE:'} KEYWORDS
                 </div>
                 <div className="form-label-hint">Filter by page title tags</div>
                 <TagInput value={inputs.titleKeywords} onChange={v => onInputChange('titleKeywords', v)}
